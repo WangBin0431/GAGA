@@ -4,4 +4,5 @@ GAGA is a parameter estimation method, and it has efficient model selection abil
 It can be applied to linear and non-linear model problems. We only upload the R version of the linear model for now. Please wait for other versions.
 
 For the first edition of the paper, see: https://arxiv.org/abs/1911.00658v1
-The first edition of the paper only proves the theoretical properties of the case where the load matrix is orthogonal. The proof for the case where the load matrix is not orthogonal has been completed and has been submitted, hoping to be accepted.
+The first edition of the paper only proves the theoretical properties when the load matrix is orthogonal. At present, Xiaofei Wang has completed the proof of the theoretical properties when the load matrix is non-orthogonal. We have submitted the manuscript and hope to be admitted.
+                                                                                                                                      
