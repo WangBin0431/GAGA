@@ -1,5 +1,5 @@
 library(MASS)
-GaGa = function(X,y,ratio=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fix_sigma=FALSE,sigm2_0 = 1){
+LM_GAGA = function(X,y,ratio=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fix_sigma=FALSE,sigm2_0 = 1){
   
   eps = 1.e-19
   
@@ -20,9 +20,6 @@ GaGa = function(X,y,ratio=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fix_
     yty = t(y)%*%y
     
     for (index in 1:itrNum) {
-      #cat("index is ",index,"\n")
-      #if(index == 35)
-      #  browser()
       
       if(sigm2 == 0)
         sigm2 = eps

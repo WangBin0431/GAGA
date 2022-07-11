@@ -1,10 +1,9 @@
-#Demo of Gaga dealing with Linear model
+#For model 1
 setwd("I:/GAGA/Github_project/GAGA/GAGA_linear_model")
 #load lasso lib
 library(ncvreg)
 library(mvtnorm)
-rm(list = ls())
-
+source("LM_GAGA.R")
 set.seed(1234)
 
 Nlambda=100 
@@ -16,7 +15,7 @@ Mean=0
 Sd=1
 
 
-#Generate training samples
+
 cov_mat=matrix(1:p_size*p_size,p_size,p_size) 
 for(i in 1:p_size){for(j in 1:p_size) {cov_mat[i,j]=0.5^{abs(i-j)}}}
 
@@ -49,106 +48,105 @@ for(iter in 1:expnum){#Under each sample size, the experiment is repeated expnum
   #Set true beta
   signal=c(runif(1,0,1),runif(1,0,1),runif(1,0,1))
   beta_true=c(signal[1],signal[2],0,0,signal[3],0,0,0)
-  write.table(beta_true,"beta_true.txt",row.names = FALSE,col.names = FALSE,quote=FALSE,append=TRUE)
+  #write.table(beta_true,"beta_true.txt",row.names = FALSE,col.names = FALSE,quote=FALSE,append=TRUE)
   pos_true=c(1,2,5);
   pos_false=c(3,4,6,7,8);
   
-#Generate random design matrix
-X=rmvnorm(n=sample_size, mean=rep(0, nrow(cov_mat)), sigma=cov_mat)
-raodong=rnorm(sample_size,mean=Mean,sd=Sd)
-y=X%*%beta_true+raodong
-
-
-##Adaptive LASSO
-LSE=lm(y~X-1)## Linear Regression to create the Adaptive Weights Vector
-weight=abs(LSE$coefficients)^1# Using gamma = 1
-XW=X%*%diag(weight)
-if(iter==1){
-  cvfit_ALASSO<- cv.ncvreg(XW, y,family="gaussian", penalty="lasso",nlambda =Nlambda, nfolds=10)
-  labmda_ALASSO=cvfit_ALASSO$lambda
-}
-cvfit_ALASSO<- cv.ncvreg(XW, y,family="gaussian", penalty="lasso",lambda =labmda_ALASSO, nfolds=10)
-fit_ALASSO = cvfit_ALASSO$fit
-
-for(j in 1:Nlambda){
-  tmp = fit_ALASSO$beta[,j][-1]
+  #Generate random design matrix
+  X=rmvnorm(n=sample_size, mean=rep(0, nrow(cov_mat)), sigma=cov_mat)
+  raodong=rnorm(sample_size,mean=Mean,sd=Sd)
+  y=X%*%beta_true+raodong
+  
+  
+  ##Adaptive LASSO
+  LSE=lm(y~X-1)## Linear Regression to create the Adaptive Weights Vector
+  weight=abs(LSE$coefficients)^1# Using gamma = 1
+  XW=X%*%diag(weight)
+  if(iter==1){
+    cvfit_ALASSO<- cv.ncvreg(XW, y,family="gaussian", penalty="lasso",nlambda =Nlambda, nfolds=10)
+    labmda_ALASSO=cvfit_ALASSO$lambda
+  }
+  cvfit_ALASSO<- cv.ncvreg(XW, y,family="gaussian", penalty="lasso",lambda =labmda_ALASSO, nfolds=10)
+  fit_ALASSO = cvfit_ALASSO$fit
+  
+  for(j in 1:Nlambda){
+    tmp = fit_ALASSO$beta[,j][-1]
+    tmp = weight*tmp
+    ERR_ALASSO[iter,j]=norm(as.matrix(beta_true-tmp),'f')
+    pos_ALASSO=which(tmp!=0);
+    pos2_ALASSO=which(tmp==0);
+    ACC_ALASSO[iter,j]=(length(intersect(pos_ALASSO,pos_true))+length(intersect(pos2_ALASSO,pos_false)))/length(beta_true)
+  }
+  tmp = fit_ALASSO$beta[,cvfit_ALASSO$min][-1]
   tmp = weight*tmp
-  ERR_ALASSO[iter,j]=norm(as.matrix(beta_true-tmp),'f')
-  pos_ALASSO=which(tmp!=0);
-  pos2_ALASSO=which(tmp==0);
-  ACC_ALASSO[iter,j]=(length(intersect(pos_ALASSO,pos_true))+length(intersect(pos2_ALASSO,pos_false)))/length(beta_true)
-}
-tmp = fit_ALASSO$beta[,cvfit_ALASSO$min][-1]
-tmp = weight*tmp
-ERR_ALASSO_CV[iter]=norm(as.matrix(beta_true-tmp),'f')
-pos1=which(tmp!=0);
-pos2=which(tmp==0);
-ACC_ALASSO_CV[iter]=(length(intersect(pos1,pos_true))+length(intersect(pos2,pos_false)))/length(beta_true)
-
-
-## SCAD 
-# fit_SCAD <- ncvreg(X, y,family="gaussian", penalty="SCAD",nlambda =Nlambda)
-if(iter==1){
-  cvfit_SCAD<- cv.ncvreg(X, y,family="gaussian", penalty="SCAD",nlambda =Nlambda, nfolds=10)
-  labmda_SCAD=cvfit_SCAD$lambda
-}
-cvfit_SCAD <- cv.ncvreg(X, y,family="gaussian", penalty="SCAD",lambda =labmda_SCAD, nfolds=10)
-fit_SCAD = cvfit_SCAD$fit
-nor_SCAD=NULL
-for(j in 1:Nlambda){ERR_SCAD[iter,j]=norm(as.matrix(beta_true-fit_SCAD$beta[,j][-1]),'f')}#记录各个罚值下，估计的参数和真是参数的二范数
-tACC_SCAD=NULL
-for(j in 1:Nlambda){
-  pos_SCAD=which(fit_SCAD$beta[-1,j]!=0);
-  pos2_SCAD=which(fit_SCAD$beta[-1,j]==0);
-  ACC_SCAD[iter,j]=(length(intersect(pos_SCAD,pos_true))+length(intersect(pos2_SCAD,pos_false)))/length(beta_true)
-}
-tmp = fit_SCAD$beta[,cvfit_SCAD$min][-1]
-ERR_SCAD_CV[iter]=norm(as.matrix(beta_true-tmp),'f')
-pos1=which(tmp!=0);
-pos2=which(tmp==0);
-ACC_SCAD_CV[iter]=(length(intersect(pos1,pos_true))+length(intersect(pos2,pos_false)))/length(beta_true)
-
-
-## MCP
-# fit_MCP <- ncvreg(X, y,family="gaussian", penalty="MCP",nlambda =Nlambda)
-if(iter==1){
-  cvfit_MCP<- cv.ncvreg(X, y,family="gaussian", penalty="MCP",nlambda =Nlambda, nfolds=10)
-  labmda_MCP=cvfit_MCP$lambda
-}
-cvfit_MCP <- cv.ncvreg(X, y,family="gaussian", penalty="MCP",lambda =labmda_MCP, nfolds=10)
-fit_MCP = cvfit_MCP$fit
-nor_MCP=NULL
-for(j in 1:Nlambda){ERR_MCP[iter,j]=norm(as.matrix(beta_true-fit_MCP$beta[,j][-1]),'f')}#记录各个罚值下，估计的参数和真是参数的二范数
-tACC_MCP=NULL
-for(j in 1:Nlambda){
-  pos_MCP=which(fit_MCP$beta[-1,j]!=0);
-  pos2_MCP=which(fit_MCP$beta[-1,j]==0);
-  ACC_MCP[iter,j]=(length(intersect(pos_MCP,pos_true))+length(intersect(pos2_MCP,pos_false)))/length(beta_true)
-}
-tmp = fit_MCP$beta[,cvfit_MCP$min][-1]
-ERR_MCP_CV[iter]=norm(as.matrix(beta_true-tmp),'f')
-pos1=which(tmp!=0);
-pos2=which(tmp==0);
-ACC_MCP_CV[iter]=(length(intersect(pos1,pos_true))+length(intersect(pos2,pos_false)))/length(beta_true)
-
-##GaGa
-source("GaGa.R")
-mratio = 2
-EW = GaGa(X,y,ratio = mratio)
-
-ERR_GAGA[iter]=norm(as.matrix(beta_true-EW),'f')
-
-pos_GAGA=which(EW!=0);
-pos2_GAGA=which(EW==0);
-ACC_GAGA[iter]=(length(intersect(pos_GAGA,pos_true))+length(intersect(pos2_GAGA,pos_false)))/p_size
-
-EW2 = GaGa(X,y,ratio = mratio,QR_flag = T)
-
-ERR_GAGA_QR[iter]=norm(as.matrix(beta_true-EW2),'f')
-
-pos_GAGA_QR=which(EW2!=0);
-pos2_GAGA_QR=which(EW2==0);
-ACC_GAGA_QR[iter]=(length(intersect(pos_GAGA_QR,pos_true))+length(intersect(pos2_GAGA_QR,pos_false)))/p_size
+  ERR_ALASSO_CV[iter]=norm(as.matrix(beta_true-tmp),'f')
+  pos1=which(tmp!=0);
+  pos2=which(tmp==0);
+  ACC_ALASSO_CV[iter]=(length(intersect(pos1,pos_true))+length(intersect(pos2,pos_false)))/length(beta_true)
+  
+  
+  ## SCAD 
+  # fit_SCAD <- ncvreg(X, y,family="gaussian", penalty="SCAD",nlambda =Nlambda)
+  if(iter==1){
+    cvfit_SCAD<- cv.ncvreg(X, y,family="gaussian", penalty="SCAD",nlambda =Nlambda, nfolds=10)
+    labmda_SCAD=cvfit_SCAD$lambda
+  }
+  cvfit_SCAD <- cv.ncvreg(X, y,family="gaussian", penalty="SCAD",lambda =labmda_SCAD, nfolds=10)
+  fit_SCAD = cvfit_SCAD$fit
+  nor_SCAD=NULL
+  for(j in 1:Nlambda){ERR_SCAD[iter,j]=norm(as.matrix(beta_true-fit_SCAD$beta[,j][-1]),'f')}#
+  tACC_SCAD=NULL
+  for(j in 1:Nlambda){
+    pos_SCAD=which(fit_SCAD$beta[-1,j]!=0);
+    pos2_SCAD=which(fit_SCAD$beta[-1,j]==0);
+    ACC_SCAD[iter,j]=(length(intersect(pos_SCAD,pos_true))+length(intersect(pos2_SCAD,pos_false)))/length(beta_true)
+  }
+  tmp = fit_SCAD$beta[,cvfit_SCAD$min][-1]
+  ERR_SCAD_CV[iter]=norm(as.matrix(beta_true-tmp),'f')
+  pos1=which(tmp!=0);
+  pos2=which(tmp==0);
+  ACC_SCAD_CV[iter]=(length(intersect(pos1,pos_true))+length(intersect(pos2,pos_false)))/length(beta_true)
+  
+  
+  ## MCP
+  # fit_MCP <- ncvreg(X, y,family="gaussian", penalty="MCP",nlambda =Nlambda)
+  if(iter==1){
+    cvfit_MCP<- cv.ncvreg(X, y,family="gaussian", penalty="MCP",nlambda =Nlambda, nfolds=10)
+    labmda_MCP=cvfit_MCP$lambda
+  }
+  cvfit_MCP <- cv.ncvreg(X, y,family="gaussian", penalty="MCP",lambda =labmda_MCP, nfolds=10)
+  fit_MCP = cvfit_MCP$fit
+  nor_MCP=NULL
+  for(j in 1:Nlambda){ERR_MCP[iter,j]=norm(as.matrix(beta_true-fit_MCP$beta[,j][-1]),'f')}#
+  tACC_MCP=NULL
+  for(j in 1:Nlambda){
+    pos_MCP=which(fit_MCP$beta[-1,j]!=0);
+    pos2_MCP=which(fit_MCP$beta[-1,j]==0);
+    ACC_MCP[iter,j]=(length(intersect(pos_MCP,pos_true))+length(intersect(pos2_MCP,pos_false)))/length(beta_true)
+  }
+  tmp = fit_MCP$beta[,cvfit_MCP$min][-1]
+  ERR_MCP_CV[iter]=norm(as.matrix(beta_true-tmp),'f')
+  pos1=which(tmp!=0);
+  pos2=which(tmp==0);
+  ACC_MCP_CV[iter]=(length(intersect(pos1,pos_true))+length(intersect(pos2,pos_false)))/length(beta_true)
+  
+  ##GaGa
+  mratio = 2
+  EW = LM_GAGA(X,y,ratio = mratio)
+  
+  ERR_GAGA[iter]=norm(as.matrix(beta_true-EW),'f')
+  
+  pos_GAGA=which(EW!=0);
+  pos2_GAGA=which(EW==0);
+  ACC_GAGA[iter]=(length(intersect(pos_GAGA,pos_true))+length(intersect(pos2_GAGA,pos_false)))/p_size
+  
+  EW2 = LM_GAGA(X,y,ratio = mratio,QR_flag = T)
+  
+  ERR_GAGA_QR[iter]=norm(as.matrix(beta_true-EW2),'f')
+  
+  pos_GAGA_QR=which(EW2!=0);
+  pos2_GAGA_QR=which(EW2==0);
+  ACC_GAGA_QR[iter]=(length(intersect(pos_GAGA_QR,pos_true))+length(intersect(pos2_GAGA_QR,pos_false)))/p_size
 
 
 }#for(iter in 1:expnum)
@@ -204,8 +202,8 @@ ERR_ACC=data.frame(ERR,ACC,Algorithms)#for ROC curve
 
 #Plotting
 library(ggplot2)
-g=ggplot(ERR_ACC,aes(ERR,ACC,shape=Algorithms,color=Algorithms))+ geom_point(size=3)+scale_shape_manual(values=seq(0,15))#shape>6,需要手动设置
-g
+g1=ggplot(ERR_ACC,aes(ERR,ACC,shape=Algorithms,color=Algorithms))+ geom_point(size=3)+scale_shape_manual(values=seq(0,15))#shape>6,需要手动设置
+g1
 
 ERR2=c(ERR_ALASSO_CV,ERR_SCAD_CV,ERR_MCP_CV,ERR_GAGA,ERR_GAGA_QR)
 ACC2=c(ACC_ALASSO_CV,ACC_SCAD_CV,ACC_MCP_CV,ACC_GAGA,ACC_GAGA_QR)

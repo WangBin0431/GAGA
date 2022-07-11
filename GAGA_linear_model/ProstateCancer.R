@@ -1,22 +1,18 @@
 rm(list = ls())
 gc()
-setwd("F:/投稿论文/JRSSB/GAGA_numericalexperiment/ProstateCancer")
+setwd("I:/GAGA/Github_project/GAGA/GAGA_linear_model")
 library (lasso2)
 data(Prostate)
 dim(Prostate)
 library(ncvreg)
+source("LM_GAGA.R")
 
-
-#产生设计阵和响应向量
 data_Pro=Prostate
 X=model.matrix(lpsa~.,data_Pro)
-#x=model.matrix(lpsa~.,Prostate)[,-1]#不使用截距项
 y=Prostate$lpsa
 samplesize=length(y)
 
 
-
-#设置训练集，设置一个随机种子，保证实验结果可重复
 set.seed(1234)
 train_size=round(samplesize*0.9)
 test_size=samplesize-train_size
@@ -35,10 +31,10 @@ train = sample(1:samplesize,train_size)
 ##Adaptive LASSO
 LSE=lm(y[train]~X[train,]-1)## Linear Regression to create the Adaptive Weights Vector
 weight=abs(LSE$coefficients)^1# Using gamma = 1
-XW=X[train,]%*%diag(weight)##消除权重后的设计???
+XW=X[train,]%*%diag(weight)##
 
 # fit_ALASSO <- ncvreg(XW, y,family="gaussian", penalty="lasso",nlambda =Nlambd)
-Nlambda=100##设置100个lambda
+Nlambda=100##
 cvfit_ALASSO<- cv.ncvreg(XW, y[train],family="gaussian", penalty="lasso",nlambda =Nlambda, nfolds=10)
 fit_ALASSO = cvfit_ALASSO$fit
 tmp = fit_ALASSO$beta[,cvfit_ALASSO$min][-1]
@@ -64,12 +60,11 @@ test_error_MCP[iter]=norm(y[-train]-X[-train,]%*%tmp,'f')/test_size
 
 
 ##GaGa
-source("GaGa.R")
 mratio = 2
-EW = GaGa(X[train,],y[train],ratio = mratio)
+EW = LM_GAGA(X[train,],y[train],ratio = mratio)
 test_error_GAGA[iter]=norm(y[-train]-X[-train,]%*%EW,'f')/test_size
 
-EW2 = GaGa(X[train,],y[train],ratio = mratio,QR_flag = T)
+EW2 = LM_GAGA(X[train,],y[train],ratio = mratio,QR_flag = T)
 test_error_GAGA_QR[iter]=norm(y[-train]-X[-train,]%*%EW2,'f')/test_size
 
 }
@@ -78,7 +73,7 @@ TEST_ERR=c(test_error_GAGA,test_error_GAGA_QR,test_error_ALASSO,test_error_SCAD,
 Algorithms=factor(c(rep('GAGA',expnum),rep('GAGA_QR',expnum),rep('ALASSO_CV',expnum),rep('SCAD_CV',expnum),rep('MCP_CV',expnum)),
             levels=c('GAGA','GAGA_QR','ALASSO_CV','SCAD_CV','MCP_CV'))
 
-#作图
+# Plotting
 library(ggplot2)
 TEST_ERR_Graph=data.frame(TEST_ERR,Algorithms)
 g=ggplot(TEST_ERR_Graph, aes(x=Algorithms, y=TEST_ERR,fill=Algorithms))+ylab("TEST ERR") + geom_boxplot()
