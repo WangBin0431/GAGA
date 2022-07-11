@@ -1,7 +1,7 @@
 GaGa.R is the function for the GAGA algorithm.
 Experiment_lambda.R works for the simulation in Section 1.3.
 Experiment_A3.R works for the simulation on the Assumption (A3).
-Experiment.R works for model 1.
+Experiment1.R works for model 1.
 Experiment2.R works for model 2.
 Experiment3.R works for model 3.
 ProstateCancer.R works for the prostate cancer dataset.
