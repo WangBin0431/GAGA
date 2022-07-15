@@ -85,8 +85,8 @@ for(jj in 1:test_size){
 
 cat("\n--------------------")
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
-cat("\n acc:", calculate.w.accuracy(as.character(Eb!=0),as.character(beta_true!=0)))
-cat("\n pacc:", calculate.w.accuracy(as.character(Ey!=0),as.character(y_t!=0)))
+cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
+cat("\n pacc:", cal.w.acc(as.character(Ey!=0),as.character(y_t!=0)))
 cat("\n")
 
 

@@ -8,7 +8,7 @@ logistic_GAGA(
   X,
   y,
   alpha = 1,
-  itrNum = 50,
+  itrNum = 30,
   flag = TRUE,
   lamda_0 = 0.001,
   fdiag = TRUE

@@ -8,7 +8,7 @@ cox_GAGA(
   X,
   t,
   alpha = 2,
-  itrNum = 30,
+  itrNum = 20,
   flag = TRUE,
   lamda_0 = 0.5,
   fdiag = TRUE

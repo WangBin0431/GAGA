@@ -2,6 +2,8 @@
 
 export(GAGA)
 export(LM_GAGA)
+export(cal.acc)
+export(cal.w.acc)
 export(cox_GAGA)
 export(logistic_GAGA)
 export(multinomial_GAGA)

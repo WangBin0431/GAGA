@@ -13,7 +13,7 @@ GAGA(
   QR_flag = FALSE,
   flag = TRUE,
   lamda_0 = 0.001,
-  fdiag = FALSE
+  fdiag = TRUE
 )
 }
 \arguments{
