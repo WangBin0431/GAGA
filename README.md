@@ -1,9 +1,3 @@
----
-editor_options: 
-  markdown: 
-    wrap: sentence
----
-
 # Global Adaptive Generative Adjustment (GAGA)
 
 GAGA is a parameter estimation method, and it has efficient model selection ability.
