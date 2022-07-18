@@ -3,7 +3,7 @@
 #'
 #' @param X
 #' @param t
-#' @param ratio
+#' @param alpha
 #' @param itrNum
 #' @param flag
 #' @param lamda_0
