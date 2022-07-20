@@ -2,7 +2,7 @@
 % Please edit documentation in R/logistic_GAGA.R
 \name{logistic_GAGA}
 \alias{logistic_GAGA}
-\title{Title}
+\title{Fit a logistic model via the Global Adaptive Generative Adjustment algorithm}
 \usage{
 logistic_GAGA(
   X,
@@ -15,8 +15,56 @@ logistic_GAGA(
 )
 }
 \arguments{
-\item{fdiag}{}
+\item{X}{Input matrix, of dimension nobs*nvars; each row is an observation.
+If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.}
+
+\item{y}{0-1 response vector.}
+
+\item{alpha}{Hyperparameter. The suggested value for alpha is 1 or 2.
+When the collinearity of the load matrix is serious, the hyperparameters can be selected larger, such as 5.}
+
+\item{itrNum}{The number of iteration steps. In general, 20 steps are enough.
+If the condition number of \code{X} is large, it is recommended to greatly increase the
+number of iteration steps.}
+
+\item{flag}{It identifies whether to make model selection. The default is \code{TRUE}.}
+
+\item{lamda_0}{The initial value of the regularization parameter for ridge regression.
+The running result of the algorithm is not sensitive to this value.}
+
+\item{fdiag}{It identifies whether to use diag Approximation to speed up the algorithm.}
+}
+\value{
+Coefficient vector.
 }
 \description{
-Title
+Fit a logistic model via the Global Adaptive Generative Adjustment algorithm
+}
+\examples{
+# Binomial
+set.seed(2022)
+library(mvtnorm)
+p_size = 30
+sample_size=600
+R1 = 1
+R2 = 3
+rate = 0.5 #Proportion of value zero in beta
+# Set true beta
+zeroNum = round(rate*p_size)
+ind1 = sample(1:p_size,p_size)
+ind2 = ind1[1:zeroNum]
+beta_true = runif(p_size,R2*0.2,R2)
+beta_true[ind2] = 0
+X = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
+X[1:sample_size,1]=1
+t = 1/(1+exp(-X\%*\%beta_true))
+tmp = runif(sample_size,0,1)
+y = rep(0,sample_size)
+y[t>tmp] = 1
+# Estimate
+Eb = GAGA(X,y,family = "binomial", alpha = 1)
+cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
+cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
+
+
 }

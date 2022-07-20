@@ -1,18 +1,51 @@
 
-#' Title
+#' Fit a poisson model via the GAGA algorithm
 #'
-#' @param X
-#' @param y
-#' @param alpha
-#' @param itrNum
-#' @param flag
-#' @param lamda_0
-#' @param fdiag
+#' Fit a poisson model the Global Adaptive Generative Adjustment algorithm
+#' @param X Input matrix, of dimension nobs*nvars; each row is an observation.
+#' If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.
+#' In order to run the program stably, it is recommended that the value of X should not be too large. It is recommended to
+#' preprocess all the items in X except the intercept item by means of preprocessing, so that the mean value of each column
+#' is 0 and the standard deviation is \code{1/ colnum(X)}.
+#' @param y Non-negative count response vector.
+#' @param alpha Hyperparameter. The suggested value for alpha is 1 or 2.
+#' When the collinearity of the load matrix is serious, the hyperparameters can be selected larger, such as 5.
+#' @param itrNum The number of iteration steps. In general, 20 steps are enough.
+#' If the condition number of \code{X} is large, it is recommended to greatly increase the
+#' number of iteration steps.
+#' @param flag It identifies whether to make model selection. The default is \code{TRUE}.
+#' @param lamda_0 The initial value of the regularization parameter for ridge regression.
+#' The running result of the algorithm is not sensitive to this value.
+#' @param fdiag It identifies whether to use diag Approximation to speed up the algorithm.
 #'
-#' @return
-#' @export
+#'
+#' @return Coefficient vector.
+#' @export poisson_GAGA
 #'
 #' @examples
+#' # Poisson
+#' set.seed(2022)
+#' library(mvtnorm)
+#' p_size = 30
+#' sample_size=300
+#' R1 = 1/sqrt(p_size)
+#' R2 = 5
+#' rate = 0.5 #Proportion of value zero in beta
+#' # Set true beta
+#' zeroNum = round(rate*p_size)
+#' ind1 = sample(1:p_size,p_size)
+#' ind2 = ind1[1:zeroNum]
+#' beta_true = runif(p_size,0,R2)
+#' beta_true[ind2] = 0
+#' X = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
+#' X[1:sample_size,1]=1
+#' y = rpois(sample_size,lambda = as.vector(exp(X%*%beta_true)))
+#' y = as.vector(y)
+#' # Estimate
+#' Eb = GAGA(X,y,alpha = 2,family="poisson")
+#' cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
+#' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
+#'
 poisson_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.5,fdiag=TRUE){
   # print("This is poisson_GAGA")
   # return(2)

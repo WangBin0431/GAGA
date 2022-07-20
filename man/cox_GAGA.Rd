@@ -2,7 +2,7 @@
 % Please edit documentation in R/cox_GAGA.R
 \name{cox_GAGA}
 \alias{cox_GAGA}
-\title{Title}
+\title{Fit a Cox model via the GAGA algorithm.}
 \usage{
 cox_GAGA(
   X,
@@ -15,8 +15,68 @@ cox_GAGA(
 )
 }
 \arguments{
-\item{fdiag}{}
+\item{X}{Input matrix, of dimension nobs*nvars; each row is an observation.
+If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.}
+
+\item{t}{A n*2 matrix, one column should be named "time", indicating the survival time;
+the other column must be named "status", and consists of 0 and 1, 0 indicates that the row of data is censored, 1 is opposite.}
+
+\item{alpha}{Hyperparameter. The suggested value for alpha is 2 or 3.}
+
+\item{itrNum}{The number of iteration steps. In general, 20 steps are enough.
+If the condition number of \code{X} is large, it is recommended to greatly increase the
+number of iteration steps.}
+
+\item{flag}{It identifies whether to make model selection. The default is \code{TRUE}.}
+
+\item{lamda_0}{The initial value of the regularization parameter for ridge regression.
+The running result of the algorithm is not sensitive to this value.}
+
+\item{fdiag}{It identifies whether to use diag Approximation to speed up the algorithm.}
+}
+\value{
+Coefficient vector.
 }
 \description{
-Title
+Fit a Cox model via the Global Adaptive Generative Adjustment algorithm.
+Part of this function refers to the coxphfit function in MATLAB 2016b.
+}
+\examples{
+# Cox
+set.seed(2022)
+library(mvtnorm)
+p_size = 50
+sample_size = 500
+test_size = 1000
+R1 = 3
+R2 = 1
+rate = 0.5 #Proportion of value zero in beta
+censoringRate = 0.25 #Proportion of censoring data in observation data
+# Set true beta
+zeroNum = round(rate*p_size)
+ind1 = sample(1:p_size,p_size)
+ind2 = ind1[1:zeroNum]
+beta_true = runif(p_size,-R2,R2)
+beta_true[ind2] = 0
+# Generate training samples
+cov_mat=matrix(1:p_size*p_size,p_size,p_size) ##covariance matrix
+for(i in 1:p_size){for(j in 1:p_size) {if(i!=j){cov_mat[i,j]=0.0}else{cov_mat[i,j]=1}}}
+X = R1*rmvnorm(n=sample_size, mean=rep(0, nrow(cov_mat)), sigma=cov_mat)
+z = X\%*\%beta_true
+u = runif(sample_size,0,1)
+t = ((-log(1-u)/(3*exp(z)))*100)^(0.1)
+cs = rep(0,sample_size)
+csNum = round(censoringRate*sample_size)
+ind1 = sample(1:sample_size,sample_size)
+ind2 = ind1[1:csNum]
+cs[ind2] = 1
+t[ind2] = runif(csNum,0,0.8)*t[ind2]
+y = cbind(t,1 - cs)
+colnames(y) = c("time", "status")
+#Estimation
+Eb = GAGA(X,y,alpha=2,family="cox")
+cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
+cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
+
+
 }

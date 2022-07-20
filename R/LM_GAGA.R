@@ -1,20 +1,73 @@
 
-#' Title
+#' Fit a linear model via the GAGA algorithm
 #'
-#' @param X
-#' @param y
-#' @param alpha
-#' @param itrNum
-#' @param QR_flag
-#' @param flag
-#' @param lamda_0
-#' @param fix_sigma
-#' @param sigm2_0
+#' Fit a linear model with a Gaussian noise via the Global Adaptive Generative Adjustment algorithm
+#' @param X Input matrix, of dimension nobs*nvars; each row is an observation.
+#' If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.
+#' @param y Quantitative response vector.
+#' @param alpha Hyperparameter. The suggested value for alpha is 2 or 3.
+#' When the collinearity of the load matrix is serious, the hyperparameters can be selected larger, such as 5.
+#' @param itrNum The number of iteration steps. In general, 20 steps are enough.
+#' If the condition number of \code{X} is large, it is recommended to greatly increase the
+#' number of iteration steps.
+#' @param QR_flag It identifies whether to use QR decomposition to speed up the algorithm.
+#' Currently only valid for linear models.
+#' @param flag It identifies whether to make model selection. The default is \code{TRUE}.
+#' @param lamda_0 The initial value of the regularization parameter for ridge regression.
+#' The running result of the algorithm is not sensitive to this value.
+#' @param fix_sigma It identifies whether to update the variance estimate of the Gaussian noise or not.
+#' \code{fix_sigma=TRUE} uses the initial variance as the variance estimate in each loop.
+#' \code{fix_sigma=FALSE} updates the variance estimate in each loop.
+#' @param sigm2_0 The initial variance of the Gaussian noise.
 #'
-#' @return
-#' @export
+#' @return Coefficient vector.
+#' @export LM_GAGA
 #'
 #' @examples
+#' # Gaussian
+#' set.seed(2022)
+#' p_size = 30
+#' sample_size=300
+#' R1 = 3
+#' R2 = 2
+#' rate = 0.5 #Proportion of value zero in beta
+#' # Set true beta
+#' zeroNum = round(rate*p_size)
+#' ind1 = sample(1:p_size,p_size)
+#' ind2 = ind1[1:zeroNum]
+#' beta_true = runif(p_size,0,R2)
+#' X = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
+#' y=X%*%beta_true + rnorm(sample_size,mean=0,sd=2)
+#' # Estimate
+#' Eb = GAGA(X,y,alpha = 3,family="gaussian")
+#' cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
+#' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
+#'
+#' # Binomial
+#' set.seed(2022)
+#' library(mvtnorm)
+#' p_size = 30
+#' sample_size=600
+#' R1 = 1
+#' R2 = 3
+#' rate = 0.5 #Proportion of value zero in beta
+#' # Set true beta
+#' zeroNum = round(rate*p_size)
+#' ind1 = sample(1:p_size,p_size)
+#' ind2 = ind1[1:zeroNum]
+#' beta_true = runif(p_size,R2*0.2,R2)
+#' beta_true[ind2] = 0
+#' X = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
+#' X[1:sample_size,1]=1
+#' t = 1/(1+exp(-X%*%beta_true))
+#' tmp = runif(sample_size,0,1)
+#' y = rep(0,sample_size)
+#' y[t>tmp] = 1
+#' # Estimate
+#' Eb = GAGA(X,y,family = "binomial", alpha = 1)
+#' cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
+#' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
+#'
 LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fix_sigma=FALSE,sigm2_0 = 1){
   # print("This is LM_GAGA")
   # return(1)

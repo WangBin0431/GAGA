@@ -2,7 +2,7 @@
 % Please edit documentation in R/multinomial_GAGA.R
 \name{multinomial_GAGA}
 \alias{multinomial_GAGA}
-\title{Title}
+\title{Fit a multinomial model via the GAGA algorithm}
 \usage{
 multinomial_GAGA(
   X,
@@ -15,10 +15,101 @@ multinomial_GAGA(
 )
 }
 \arguments{
-\item{X}{design matrix}
+\item{X}{Input matrix, of dimension nobs*nvars; each row is an observation.
+If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.}
 
-\item{fdiag}{}
+\item{y}{One-hot response matrix}
+
+\item{alpha}{Hyperparameter. The suggested value for alpha is 1 or 2.
+When the collinearity of the load matrix is serious, the hyperparameters can be selected larger, such as 5.}
+
+\item{itrNum}{The number of iteration steps. In general, 20 steps are enough.
+If the condition number of \code{X} is large, it is recommended to greatly increase the
+number of iteration steps.}
+
+\item{flag}{It identifies whether to make model selection. The default is \code{TRUE}.}
+
+\item{lamda_0}{The initial value of the regularization parameter for ridge regression.
+The running result of the algorithm is not sensitive to this value.}
+
+\item{fdiag}{It identifies whether to use diag Approximation to speed up the algorithm.}
+}
+\value{
+Coefficient matrix with K-1 columns beta_1,...,beta_{K-1} where K is the class number.
+For k=1,..,K-1, the probability
+\deqn{Pr(G=k|x)=exp(x^T beta_k) /(1+sum_{k=1}^{K-1}exp(x^T beta_k))}.
+For k=K, the probability \deqn{Pr(G=K|x)=1/(1+sum_{k=1}^{K-1}exp(x^T beta_k))}.
 }
 \description{
-Title
+Fit a multinomial model the Global Adaptive Generative Adjustment algorithm
+}
+\examples{
+# Multinomial
+set.seed(2022)
+library(mvtnorm)
+p_size = 20
+C = 3
+sample_size = 500
+test_size = 1000
+rate = 0.5 #Proportion of value zero in beta
+R1 = 1
+R2 = 5
+beta_true = matrix(rep(0,p_size*C),c(p_size,C))
+zeroNum = round(rate*p_size)
+for(jj in 1:C){
+  ind1 = sample(1:p_size,p_size)
+  ind2 = ind1[1:zeroNum]
+  tmp = runif(p_size,0,R2)
+  tmp[ind2] = 0
+  beta_true[,jj] = tmp
+}
+cov_mat=matrix(1:p_size*p_size,p_size,p_size)
+for(i in 1:p_size){for(j in 1:p_size) {if(i!=j){cov_mat[i,j]=0.0}else{cov_mat[i,j]=1}}}
+X = R1*rmvnorm(n=sample_size, mean=rep(0, nrow(cov_mat)), sigma=cov_mat)
+X[1:sample_size,1]=1
+z = X\%*\%beta_true
+t = exp(z)/(1+rowSums(exp(z)))
+t = cbind(t,1-rowSums(t))
+tt = t(apply(t,1,cumsum))
+tt = cbind(rep(0,sample_size),tt)
+y = matrix(rep(0,sample_size*(C+1)),c(sample_size,C+1))
+for(jj in 1:sample_size){
+  tmp = runif(1,0,1)
+  for(kk in 1:(C+1)){
+    if((tmp>tt[jj,kk])&&(tmp<=tt[jj,kk+1])){
+      y[jj,kk] = 1
+      break
+    }
+  }
+}
+# Estimate
+Eb = GAGA(X, y,alpha=1,family = "multinomial")
+X_t = R1*rmvnorm(n=test_size, mean=rep(0, nrow(cov_mat)), sigma=cov_mat)
+X_t[1:test_size,1]=1
+z = X_t\%*\%beta_true
+t = exp(z)/(1+rowSums(exp(z)))
+t = cbind(t,1-rowSums(t))
+tt = t(apply(t,1,cumsum))
+tt = cbind(rep(0,test_size),tt)
+y_t = rep(0,test_size)
+for(jj in 1:test_size){
+  tmp = runif(1,0,1)
+  for(kk in 1:(C+1)){
+    if((tmp>tt[jj,kk])&&(tmp<=tt[jj,kk+1])){
+      y_t[jj] = kk
+      break
+    }
+  }
+}
+Ey = rep(0,test_size)
+z = X_t\%*\%Eb
+t = exp(z)/(1+rowSums(exp(z)))
+t = cbind(t,1-rowSums(t))
+for(jj in 1:test_size){
+  Ey[jj] = which.max(t[jj,])
+}
+cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
+cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
+cat("\n pacc:", cal.w.acc(as.character(Ey!=0),as.character(y_t!=0)))
+
 }
