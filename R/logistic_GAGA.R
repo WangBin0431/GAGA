@@ -1,8 +1,7 @@
-
 #' Fit a logistic model via the Global Adaptive Generative Adjustment algorithm
 #' @param X Input matrix, of dimension nobs*nvars; each row is an observation.
 #' If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.
-#' @param y 0-1 response vector.
+#' @param y should be either a factor with two levels.
 #' @param alpha Hyperparameter. The suggested value for alpha is 1 or 2.
 #' When the collinearity of the load matrix is serious, the hyperparameters can be selected larger, such as 5.
 #' @param itrNum The number of iteration steps. In general, 20 steps are enough.
@@ -44,9 +43,28 @@
 #'
 #'
 logistic_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.001,fdiag=TRUE){
+
   eps = 1.e-19
   n = nrow(X)
   p = ncol(X)
+  # refers to "lognet.R" of glmnet
+  vnames=colnames(X)
+  if(is.null(vnames))vnames=paste("V",seq(p),sep="")
+
+  y=as.factor(y)
+  ntab=table(y)
+  minclass=min(ntab)
+  if(minclass<=1)stop("one multinomial or binomial class has 1 or 0 observations; not allowed")
+  if(minclass<8)warning("one multinomial or binomial class has fewer than 8  observations; dangerous ground")
+  classnames=names(ntab)
+  nc=as.integer(length(ntab))
+  y=diag(nc)[as.numeric(y),]
+  y = y[,2]
+
+  fit = list()
+  fit$classnames = classnames
+  class(fit) = c("GAGA","binomial")
+
   b = rep(1,p)*lamda_0
   b_old = b
 
@@ -82,7 +100,12 @@ logistic_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.001,fdiag=TRU
     }
   }#for (index in 1:itrNum)
 
-  return(as.vector(beta))
+  fit$beta = as.vector(beta)
+  names(fit$beta) = vnames
+  fit$alpha = alpha
+  fit$itrNum = itrNum
+  fit$fdiag = fdiag
+  return(fit)
 }
 ##############################################################################
 
@@ -146,6 +169,3 @@ getDDfu.logistic = function(u,X,y,b,fdiag){
     return(gg)
   }
 }
-
-
-

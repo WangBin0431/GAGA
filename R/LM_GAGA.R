@@ -19,6 +19,7 @@
 #' \code{fix_sigma=TRUE} uses the initial variance as the variance estimate in each loop.
 #' \code{fix_sigma=FALSE} updates the variance estimate in each loop.
 #' @param sigm2_0 The initial variance of the Gaussian noise.
+#' @fdiag It identifies whether to use diag Approximation to speed up the algorithm.
 #'
 #' @return Coefficient vector.
 #' @export LM_GAGA
@@ -68,9 +69,13 @@
 #' cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 #' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 #'
-LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fix_sigma=FALSE,sigm2_0 = 1){
-  # print("This is LM_GAGA")
-  # return(1)
+LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fix_sigma=FALSE,sigm2_0 = 1,fdiag = FALSE){
+
+  vnames=colnames(X)
+  if(is.null(vnames))vnames=paste("V",seq(ncol(X)),sep="")
+  fit = list()
+  class(fit) = c("GAGA","gaussian")
+
   eps = 1.e-19
 
   if(!QR_flag){
@@ -122,7 +127,7 @@ LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,f
           beta_sub[E_pow_beta_sub<CRB_sub] = 0;
           beta[dB<=100] = beta_sub;
           beta[dB>100] = 0;
-          return(as.vector(beta))
+
         }
         else{
           pow_beta = beta^2
@@ -140,8 +145,13 @@ LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,f
           sortbeta[1:N] = sortbeta_sub
           sortbeta[N+1:length(sortbeta)] = 0
           beta[idx] = sortbeta
-          return(as.vector(beta))
         }
+        fit$beta = as.vector(beta)
+        names(fit$beta) = vnames
+        fit$alpha = alpha
+        fit$itrNum = itrNum
+        fit$fdiag = fdiag
+        return(fit)
       }#if(flag&&(index==itrNum))
 
       B_old = B
@@ -169,92 +179,97 @@ LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,f
       aa = sort(abs(beta)^2,T,index.return = T)
       idx1 = aa$ix
       X = X[,idx1[1:N]]
-    #browser()
-  }
-
-  beta = solve(t(X)%*%X + lamda_0*diag(rep(1,ncol(X))),tol = 0)%*%t(X)%*%y
-
-  pow_beta = abs(beta)^2
-  aa = sort(pow_beta,T,index.return = T)
-  idx = aa$ix
-  sortX = X[,idx]
-
-  tmp = qr(sortX)
-  K = qr.Q(tmp)
-  R = qr.R(tmp)
-
-  tmp = diag(diag(R))
-
-  R = solve(tmp,tol = 0)%*%R
-  K = K%*%tmp
-
-  N_K = nrow(K)
-  Q_K = ncol(K)
-  N_R = nrow(R)
-  Q_R = ncol(R)
-
-  if(fix_sigma)
-    sigm2=sigm2_0
-  else
-    sigm2 = 1;
-
-
-  b = lamda_0*rep(1,Q_K)
-  b_old = b
-
-  kk = diag(t(K)%*%K)
-  Kty = t(K)%*%y
-
-  for(index in 1:itrNum){
-    if(sigm2 == 0){
-      sigm2 = eps
-    }
-    if(index == itrNum){
-      dB = b - b_old
-      b = b/alpha
-    }
-    EW = getEb_orth.LM(kk,Kty,sigm2,b)
-
-    covW = getEbb_orth.LM(kk,sigm2,b)
-
-    EWW = covW + abs(EW)^2
-
-    if(flag&&(index==itrNum)&&(sum(dB<=100)!=0)){
-
-      K_sub = K[,dB<=100]
-      kk_sub = diag(t(K_sub)%*%K_sub)
-      CRB_sub = getEbb_orth.LM(kk_sub,sigm2,0)
-      EW_sub = EW[dB<=100]
-      EWW_sub = EWW[dB<=100]
-      EW_sub[EWW_sub<CRB_sub] = 0
-      EW[dB<=100] = EW_sub
-      EW[dB>100] = 0
+      #browser()
     }
 
-    b_old = b
-    b = alpha/EWW
+    beta = solve(t(X)%*%X + lamda_0*diag(rep(1,ncol(X))),tol = 0)%*%t(X)%*%y
 
-    if(fix_sigma){
+    pow_beta = abs(beta)^2
+    aa = sort(pow_beta,T,index.return = T)
+    idx = aa$ix
+    sortX = X[,idx]
+
+    tmp = qr(sortX)
+    K = qr.Q(tmp)
+    R = qr.R(tmp)
+
+    tmp = diag(diag(R))
+
+    R = solve(tmp,tol = 0)%*%R
+    K = K%*%tmp
+
+    N_K = nrow(K)
+    Q_K = ncol(K)
+    N_R = nrow(R)
+    Q_R = ncol(R)
+
+    if(fix_sigma)
       sigm2=sigm2_0
+    else
+      sigm2 = 1;
+
+
+    b = lamda_0*rep(1,Q_K)
+    b_old = b
+
+    kk = diag(t(K)%*%K)
+    Kty = t(K)%*%y
+
+    for(index in 1:itrNum){
+      if(sigm2 == 0){
+        sigm2 = eps
+      }
+      if(index == itrNum){
+        dB = b - b_old
+        b = b/alpha
+      }
+      EW = getEb_orth.LM(kk,Kty,sigm2,b)
+
+      covW = getEbb_orth.LM(kk,sigm2,b)
+
+      EWW = covW + abs(EW)^2
+
+      if(flag&&(index==itrNum)&&(sum(dB<=100)!=0)){
+
+        K_sub = K[,dB<=100]
+        kk_sub = diag(t(K_sub)%*%K_sub)
+        CRB_sub = getEbb_orth.LM(kk_sub,sigm2,0)
+        EW_sub = EW[dB<=100]
+        EWW_sub = EWW[dB<=100]
+        EW_sub[EWW_sub<CRB_sub] = 0
+        EW[dB<=100] = EW_sub
+        EW[dB>100] = 0
+      }
+
+      b_old = b
+      b = alpha/EWW
+
+      if(fix_sigma){
+        sigm2=sigm2_0
+      }
+      else{
+        sigm2 = (yty - 2*t(y)%*%K%*%EW)/N + sum(EWW*kk)/N
+        sigm2 = as.vector(sigm2)
+      }
+
+
+    }#for(index in 1:itrNum)
+    #browser()
+    beta = solve(R,tol = 0)%*%EW
+    beta[idx] = beta
+
+    if(Q>N){
+      tmp = rep(0,Q)
+      tmp[1:N] = beta;
+      tmp[idx1] = tmp
+      beta = tmp
     }
-    else{
-      sigm2 = (yty - 2*t(y)%*%K%*%EW)/N + sum(EWW*kk)/N
-      sigm2 = as.vector(sigm2)
-    }
-
-
-  }#for(index in 1:itrNum)
-  #browser()
-  beta = solve(R,tol = 0)%*%EW
-  beta[idx] = beta
-
-  if(Q>N){
-    tmp = rep(0,Q)
-    tmp[1:N] = beta;
-    tmp[idx1] = tmp
-    beta = tmp
-  }
-  return(as.vector(beta))
+    fit$beta = as.vector(beta)
+    names(fit$beta) = vnames
+    fit$alpha = alpha
+    fit$itrNum = itrNum
+    fit$fdiag = fdiag
+    return(fit)
   }#QR_flag == TRUE
 }
 
@@ -298,4 +313,5 @@ OMP = function(X,y,L,eps = 0){
   temp[indx[1:j]] = a;
   return(temp)
 }
+
 

@@ -47,8 +47,12 @@
 #' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 #'
 poisson_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.5,fdiag=TRUE){
-  # print("This is poisson_GAGA")
-  # return(2)
+
+  vnames=colnames(X)
+  if(is.null(vnames))vnames=paste("V",seq(ncol(X)),sep="")
+  fit = list()
+  class(fit) = c("GAGA","poisson")
+
   eps = 1.e-19
   n = nrow(X)
   p = ncol(X)
@@ -95,7 +99,12 @@ poisson_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.5,fdiag=TRUE){
     }
 
   }#for (index in 1:itrNum)
-  return(as.vector(beta))
+  fit$beta = as.vector(beta)
+  names(fit$beta) = vnames
+  fit$alpha = alpha
+  fit$itrNum = itrNum
+  fit$fdiag = fdiag
+  return(fit)
 }
 
 
