@@ -3,7 +3,7 @@
 #' Fit a multinomial model the Global Adaptive Generative Adjustment algorithm
 #' @param X Input matrix, of dimension nobs*nvars; each row is an observation.
 #' If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.
-#' @param y One-hot response matrix
+#' @param y a One-hot response matrix or a \code{nc>=2} level factor
 #' @param alpha Hyperparameter. The suggested value for alpha is 1 or 2.
 #' When the collinearity of the load matrix is serious, the hyperparameters can be selected larger, such as 5.
 #' @param itrNum The number of iteration steps. In general, 20 steps are enough.
@@ -94,11 +94,33 @@
 #' cat("\n pacc:", cal.w.acc(as.character(Ey!=0),as.character(y_t!=0)))
 #'
 multinomial_GAGA = function(X,y,alpha=2,itrNum=50,flag=TRUE,lamda_0=0.001,fdiag=TRUE){
+  #browser()
   eps = 1.e-19
   N = nrow(X)
   P = ncol(X)
+
+  # refers to "lognet.R" of glmnet
+  vnames=colnames(X)
+  if(is.null(vnames))vnames=paste("V",seq(P),sep="")
+
+  if(!is.matrix(y)){
+    y = as.factor(z)
+    ntab = table(y)
+    classnames=names(ntab)
+    nc = as.integer(length(ntab))
+    y = diag(nc)[as.numeric(y), ,drop=FALSE]
+  }else{
+    if(!(ncol(y)>=2&&min(y)==0&&max(y)==1))stop("y should be a one hot matrix or a nc>=2 level factor")
+    classnames = colnames(y)
+    if(is.null(classnames))classnames=paste("V",seq(ncol(y)),sep="")
+  }
+
   K = ncol(y)
   C = K-1
+
+  fit = list()
+  fit$classnames = classnames
+  class(fit) = c("GAGA","multinomial")
 
   b = rep(1,P*C)*lamda_0
   b_old = b
@@ -139,7 +161,13 @@ multinomial_GAGA = function(X,y,alpha=2,itrNum=50,flag=TRUE,lamda_0=0.001,fdiag=
     }
 
   }#for (index in 1:itrNum)
-  return(beta)
+  fit$beta = beta
+  rownames(fit$beta) = vnames
+  colnames(fit$beta) = classnames[1:C]
+  fit$alpha = alpha
+  fit$itrNum = itrNum
+  fit$fdiag = fdiag
+  return(fit)
 }
 
 
@@ -229,7 +257,3 @@ getDDfu.multinomial = function(u,X,y,b,fdiag){
   }
   return(gg)
 }
-
-
-
-

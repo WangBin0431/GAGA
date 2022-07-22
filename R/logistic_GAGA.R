@@ -37,7 +37,8 @@
 #' y = rep(0,sample_size)
 #' y[t>tmp] = 1
 #' # Estimate
-#' Eb = GAGA(X,y,family = "binomial", alpha = 1)
+#' fit = GAGA(X,y,family = "binomial", alpha = 1)
+#' Eb = fit$beta
 #' cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 #' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 #'
@@ -60,6 +61,7 @@ logistic_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.001,fdiag=TRU
   nc=as.integer(length(ntab))
   y=diag(nc)[as.numeric(y),]
   y = y[,2]
+
 
   fit = list()
   fit$classnames = classnames

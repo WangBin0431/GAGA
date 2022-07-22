@@ -7,6 +7,7 @@ cat("Test cox GAGA\n")
 p_size = 50
 sample_size = 500
 test_size = 1000
+test_size = 1000
 
 R1 = 3
 R2 = 1
@@ -39,11 +40,30 @@ y = cbind(t,1 - cs)
 colnames(y) = c("time", "status")
 
 #Estimation
-Eb = GAGA(X,y,alpha=2,family="cox")
+fit = GAGA(X,y,alpha=2,family="cox")
+Eb = fit$beta
+
+#Generate testing samples
+X_t = R1*rmvnorm(n=test_size, mean=rep(0, nrow(cov_mat)), sigma=cov_mat)
+z = X_t%*%beta_true
+u = runif(sample_size,0,1)
+t = ((-log(1-u)/(3*exp(z)))*100)^(0.1)
+cs = rep(0,test_size)
+csNum = round(censoringRate*test_size)
+ind1 = sample(1:test_size,test_size)
+ind2 = ind1[1:csNum]
+cs[ind2] = 1
+t[ind2] = runif(csNum,0,0.8)*t[ind2]
+y_t = cbind(t,1 - cs)
+colnames(y_t) = c("time", "status")
+
+#Prediction
+pred = predict.GAGA(fit,newx=X_t)
 
 cat("\n--------------------")
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
+cat("\n Cindex:", cal.cindex(pred,y_t))
 cat("\n")
 
 

@@ -63,7 +63,8 @@ X[1:sample_size,1]=1
 y = rpois(sample_size,lambda = as.vector(exp(X\%*\%beta_true)))
 y = as.vector(y)
 # Estimate
-Eb = GAGA(X,y,alpha = 2,family="poisson")
+fit = GAGA(X,y,alpha = 2,family="poisson")
+Eb = fit$beta
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 

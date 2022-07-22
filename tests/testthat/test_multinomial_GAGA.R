@@ -49,7 +49,8 @@ for(jj in 1:sample_size){
   }
 }
 
-Eb = GAGA(X, y,alpha=1,family = "multinomial")
+fit = GAGA(X, y,alpha=1,family = "multinomial")
+Eb = fit$beta
 
 #Prediction#######################################################################################################
 #Generate test samples

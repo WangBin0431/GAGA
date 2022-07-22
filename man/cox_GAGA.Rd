@@ -74,7 +74,8 @@ t[ind2] = runif(csNum,0,0.8)*t[ind2]
 y = cbind(t,1 - cs)
 colnames(y) = c("time", "status")
 #Estimation
-Eb = GAGA(X,y,alpha=2,family="cox")
+fit = GAGA(X,y,alpha=2,family="cox")
+Eb = fit$beta
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 

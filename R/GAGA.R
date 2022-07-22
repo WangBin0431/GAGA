@@ -6,7 +6,7 @@
 #' If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.
 #' @param y Response variable. Quantitative for \code{family="gaussian"}, or
 #' \code{family="poisson"} (non-negative counts). For \code{family="binomial"} should be either a factor with two levels.
-#' For \code{family="multinomial"} should be a one-hot matrix.
+#' For \code{family="multinomial"} should be a one-hot matrix or a \code{nc>=2} level factor.
 #' For \code{family="cox"} should be an n*2 matrix, one column should be named "time", indicating the survival time;
 #' the other column must be named "status", and consists of 0 and 1, 0 indicates that the row of data is censored, 1 is opposite.
 #' @param family Either a character string representing one of the built-in families,

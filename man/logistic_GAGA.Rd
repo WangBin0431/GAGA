@@ -18,7 +18,7 @@ logistic_GAGA(
 \item{X}{Input matrix, of dimension nobs*nvars; each row is an observation.
 If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.}
 
-\item{y}{0-1 response vector.}
+\item{y}{should be either a factor with two levels.}
 
 \item{alpha}{Hyperparameter. The suggested value for alpha is 1 or 2.
 When the collinearity of the load matrix is serious, the hyperparameters can be selected larger, such as 5.}
@@ -62,7 +62,8 @@ tmp = runif(sample_size,0,1)
 y = rep(0,sample_size)
 y[t>tmp] = 1
 # Estimate
-Eb = GAGA(X,y,family = "binomial", alpha = 1)
+fit = GAGA(X,y,family = "binomial", alpha = 1)
+Eb = fit$beta
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 

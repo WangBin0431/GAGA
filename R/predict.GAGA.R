@@ -48,5 +48,7 @@ predict.multinomial_GAGA = function(fit,newx){
 }
 
 predict.cox_GAGA = function(fit,newx){
-
+  Eb = fit$beta
+  Ey = newx%*%Eb
+  return(Ey)
 }

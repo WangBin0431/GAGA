@@ -40,7 +40,8 @@
 #' X = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
 #' y=X%*%beta_true + rnorm(sample_size,mean=0,sd=2)
 #' # Estimate
-#' Eb = GAGA(X,y,alpha = 3,family="gaussian")
+#' fit = GAGA(X,y,alpha = 3,family="gaussian")
+#' Eb = fit$beta
 #' cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 #' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 #'

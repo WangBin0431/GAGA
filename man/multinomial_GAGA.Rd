@@ -18,7 +18,7 @@ multinomial_GAGA(
 \item{X}{Input matrix, of dimension nobs*nvars; each row is an observation.
 If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.}
 
-\item{y}{One-hot response matrix}
+\item{y}{a One-hot response matrix or a \code{nc>=2} level factor}
 
 \item{alpha}{Hyperparameter. The suggested value for alpha is 1 or 2.
 When the collinearity of the load matrix is serious, the hyperparameters can be selected larger, such as 5.}

@@ -51,12 +51,19 @@
 #' y = cbind(t,1 - cs)
 #' colnames(y) = c("time", "status")
 #' #Estimation
-#' Eb = GAGA(X,y,alpha=2,family="cox")
+#' fit = GAGA(X,y,alpha=2,family="cox")
+#' Eb = fit$beta
 #' cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 #' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 #'
 #'
 cox_GAGA = function(X,t,alpha=2,itrNum=20,flag=TRUE,lamda_0=0.5,fdiag=TRUE){
+
+  vnames=colnames(X)
+  if(is.null(vnames))vnames=paste("V",seq(ncol(X)),sep="")
+  fit = list()
+  class(fit) = c("GAGA","cox")
+
   eps = 1.e-19
   n = nrow(X)
   p = ncol(X)
@@ -104,7 +111,12 @@ cox_GAGA = function(X,t,alpha=2,itrNum=20,flag=TRUE,lamda_0=0.5,fdiag=TRUE){
       tmpQ = sum(db<=100)
       if(tmpQ == 0){
         beta = rep(0,Q)
-        return(as.vector(beta))
+        fit$beta = as.vector(beta)
+        names(fit$beta) = vnames
+        fit$alpha = alpha
+        fit$itrNum = itrNum
+        fit$fdiag = fdiag
+        return(fit)
       }
       cov0 = getDDfu.cox(beta,X,sorty,freq,cens,atrisk,rep(0,p),fdiag)
       #browser()
@@ -117,7 +129,12 @@ cox_GAGA = function(X,t,alpha=2,itrNum=20,flag=TRUE,lamda_0=0.5,fdiag=TRUE){
     }
 
   }#for (index in 1:itrNum)
-  return(as.vector(beta))
+  fit$beta = as.vector(beta)
+  names(fit$beta) = vnames
+  fit$alpha = alpha
+  fit$itrNum = itrNum
+  fit$fdiag = fdiag
+  return(fit)
 }
 
 ################################################################################

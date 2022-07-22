@@ -21,9 +21,8 @@ GAGA(
 If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.}
 
 \item{y}{Response variable. Quantitative for \code{family="gaussian"}, or
-\code{family="poisson"} (non-negative counts). For \code{family="binomial"}
-should be a vector consisting of 0 or 1, indicating the category of N observations.
-For \code{family="multinomial"} should be a one-hot matrix.
+\code{family="poisson"} (non-negative counts). For \code{family="binomial"} should be either a factor with two levels.
+For \code{family="multinomial"} should be a one-hot matrix or a \code{nc>=2} level factor.
 For \code{family="cox"} should be an n*2 matrix, one column should be named "time", indicating the survival time;
 the other column must be named "status", and consists of 0 and 1, 0 indicates that the row of data is censored, 1 is opposite.}
 
