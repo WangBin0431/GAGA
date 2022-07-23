@@ -20,7 +20,7 @@ Install from Github:
 
 Install from package file:
 
-1. Download GAGA package from: https://drive.google.com/file/d/17MbbfWuBXhK1EUuElf8WyJ_wQoaGjmRS/view?usp=sharing
+1. Download GAGA package from: https://drive.google.com/drive/folders/1IGaYlAIedbjBLExdf8VdooUlhZ9jLTAH?usp=sharing
 
 2. Install it.
 
