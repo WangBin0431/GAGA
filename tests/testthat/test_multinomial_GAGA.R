@@ -6,6 +6,7 @@ cat("Test multinomial GAGA\n")
 
 p_size = 20
 C = 3
+classnames = c("C1","C2","C3","C4")
 sample_size = 500
 test_size = 1000
 
@@ -38,16 +39,19 @@ t = cbind(t,1-rowSums(t))
 tt = t(apply(t,1,cumsum))
 tt = cbind(rep(0,sample_size),tt)
 
-y = matrix(rep(0,sample_size*(C+1)),c(sample_size,C+1))
+# y = matrix(rep(0,sample_size*(C+1)),c(sample_size,C+1))
+y = rep(0,sample_size)
 for(jj in 1:sample_size){
   tmp = runif(1,0,1)
   for(kk in 1:(C+1)){
     if((tmp>tt[jj,kk])&&(tmp<=tt[jj,kk+1])){
-      y[jj,kk] = 1
+      # y[jj,kk] = 1
+      y[jj] = kk
       break
     }
   }
 }
+y = classnames[y]
 
 fit = GAGA(X, y,alpha=1,family = "multinomial")
 Eb = fit$beta
@@ -74,20 +78,14 @@ for(jj in 1:test_size){
   }
   #y_tt[jj] = which.max(t[jj,])
 }
+y_t = classnames[y_t]
 
-Ey = rep(0,test_size)
-z = X_t%*%Eb
-t = exp(z)/(1+rowSums(exp(z)))
-t = cbind(t,1-rowSums(t))
-for(jj in 1:test_size){
-  Ey[jj] = which.max(t[jj,])
-}
-
+Ey = predict.GAGA(fit,newx = X_t)
 
 cat("\n--------------------")
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
-cat("\n pacc:", cal.w.acc(as.character(Ey!=0),as.character(y_t!=0)))
+cat("\n pacc:", cal.w.acc(as.character(Ey),as.character(y_t)))
 cat("\n")
 
 

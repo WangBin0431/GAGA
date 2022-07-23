@@ -104,7 +104,7 @@ multinomial_GAGA = function(X,y,alpha=2,itrNum=50,flag=TRUE,lamda_0=0.001,fdiag=
   if(is.null(vnames))vnames=paste("V",seq(P),sep="")
 
   if(!is.matrix(y)){
-    y = as.factor(z)
+    y = as.factor(y)
     ntab = table(y)
     classnames=names(ntab)
     nc = as.integer(length(ntab))

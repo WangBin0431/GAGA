@@ -44,7 +44,19 @@ predict.logistic_GAGA = function(fit,newx){
 }
 
 predict.multinomial_GAGA = function(fit,newx){
+  test_size = nrow(newx)
+  classnames = fit$classnames
+  Eb = fit$beta
 
+  Ey = rep(0,test_size)
+  z = newx%*%Eb
+  t = exp(z)/(1+rowSums(exp(z)))
+  t = cbind(t,1-rowSums(t))
+  for(jj in 1:test_size){
+    Ey[jj] = which.max(t[jj,])
+  }
+  Ey = classnames[Ey]
+  return(Ey)
 }
 
 predict.cox_GAGA = function(fit,newx){

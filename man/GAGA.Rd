@@ -69,35 +69,59 @@ ind2 = ind1[1:zeroNum]
 beta_true = runif(p_size,0,R2)
 X = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
 y=X\%*\%beta_true + rnorm(sample_size,mean=0,sd=2)
-# Estimate
-Eb = GAGA(X,y,alpha = 3,family="gaussian")
+# Estimation
+fit = GAGA(X,y,alpha = 3,family="gaussian")
+Eb = fit$beta
+#Create testing data
+X_t = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
+y_t=X_t\%*\%beta_true + rnorm(sample_size,mean=0,sd=2)
+#Prediction
+Ey = predict.GAGA(fit,newx=X_t)
+
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
+cat("\n perr:", norm(Ey-y_t,type="2")/sqrt(sample_size))
 
 # Binomial
 set.seed(2022)
 library(mvtnorm)
+cat("\n")
+cat("Test binomial GAGA\n")
 p_size = 30
 sample_size=600
+test_size=1000
 R1 = 1
 R2 = 3
 rate = 0.5 #Proportion of value zero in beta
-# Set true beta
+#Set true beta
 zeroNum = round(rate*p_size)
 ind1 = sample(1:p_size,p_size)
 ind2 = ind1[1:zeroNum]
 beta_true = runif(p_size,R2*0.2,R2)
 beta_true[ind2] = 0
+# Generate training samples
 X = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
 X[1:sample_size,1]=1
 t = 1/(1+exp(-X\%*\%beta_true))
 tmp = runif(sample_size,0,1)
 y = rep(0,sample_size)
 y[t>tmp] = 1
-# Estimate
-Eb = GAGA(X,y,family = "binomial", alpha = 1)
+# Estimation
+fit = GAGA(X,y,family = "binomial", alpha = 1)
+Eb = fit$beta
+# Generate testing samples
+X_t = R1*matrix(rnorm(test_size * p_size), ncol = p_size)
+X_t[1:test_size,1]=1
+t = 1/(1+exp(-X_t\%*\%beta_true))
+tmp = runif(test_size,0,1)
+y_t = rep(0,test_size)
+y_t[t>tmp] = 1
+#Prediction
+Ey = predict.GAGA(fit,newx = X_t)
+cat("\n--------------------")
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
+cat("\n pacc:", cal.w.acc(as.character(Ey),as.character(y_t)))
 
 # Poisson
 set.seed(2022)
@@ -118,20 +142,26 @@ X[1:sample_size,1]=1
 y = rpois(sample_size,lambda = as.vector(exp(X\%*\%beta_true)))
 y = as.vector(y)
 # Estimate
-Eb = GAGA(X,y,alpha = 2,family="poisson")
+fit = GAGA(X,y,alpha = 2,family="poisson")
+Eb = fit$beta
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 
-# Multinomial
+# multinomial
 set.seed(2022)
 library(mvtnorm)
+cat("\n")
+cat("Test multinomial GAGA\n")#'
 p_size = 20
 C = 3
+classnames = c("C1","C2","C3","C4")
 sample_size = 500
-test_size = 1000
+test_size = 1000#'
 rate = 0.5 #Proportion of value zero in beta
+Num = 10 # Total number of experiments
 R1 = 1
-R2 = 5
+R2 = 5#'
+#Set true beta
 beta_true = matrix(rep(0,p_size*C),c(p_size,C))
 zeroNum = round(rate*p_size)
 for(jj in 1:C){
@@ -140,28 +170,35 @@ for(jj in 1:C){
   tmp = runif(p_size,0,R2)
   tmp[ind2] = 0
   beta_true[,jj] = tmp
-}
+}#'
 cov_mat=matrix(1:p_size*p_size,p_size,p_size)
-for(i in 1:p_size){for(j in 1:p_size) {if(i!=j){cov_mat[i,j]=0.0}else{cov_mat[i,j]=1}}}
-X = R1*rmvnorm(n=sample_size, mean=rep(0, nrow(cov_mat)), sigma=cov_mat)
+for(i in 1:p_size){for(j in 1:p_size) {if(i!=j){cov_mat[i,j]=0.0}else{cov_mat[i,j]=1}}}#'
+#Generate training samples
+X = R1*rmvnorm(n=sample_size, mean=rep(0, nrow(cov_mat)), sigma=cov_mat)#'
 X[1:sample_size,1]=1
 z = X\%*\%beta_true
 t = exp(z)/(1+rowSums(exp(z)))
 t = cbind(t,1-rowSums(t))
 tt = t(apply(t,1,cumsum))
-tt = cbind(rep(0,sample_size),tt)
-y = matrix(rep(0,sample_size*(C+1)),c(sample_size,C+1))
+tt = cbind(rep(0,sample_size),tt)#'
+# y = matrix(rep(0,sample_size*(C+1)),c(sample_size,C+1))
+y = rep(0,sample_size)
 for(jj in 1:sample_size){
   tmp = runif(1,0,1)
   for(kk in 1:(C+1)){
     if((tmp>tt[jj,kk])&&(tmp<=tt[jj,kk+1])){
-      y[jj,kk] = 1
+      # y[jj,kk] = 1
+      y[jj] = kk
       break
     }
   }
 }
-# Estimate
-Eb = GAGA(X, y,alpha=1,family = "multinomial")
+y = classnames[y]
+# Estimation
+fit = GAGA(X, y,alpha=1,family = "multinomial")
+Eb = fit$beta#'
+#Prediction
+#Generate test samples
 X_t = R1*rmvnorm(n=test_size, mean=rep(0, nrow(cov_mat)), sigma=cov_mat)
 X_t[1:test_size,1]=1
 z = X_t\%*\%beta_true
@@ -169,7 +206,9 @@ t = exp(z)/(1+rowSums(exp(z)))
 t = cbind(t,1-rowSums(t))
 tt = t(apply(t,1,cumsum))
 tt = cbind(rep(0,test_size),tt)
+
 y_t = rep(0,test_size)
+#y_tt = rep(0,test_size)
 for(jj in 1:test_size){
   tmp = runif(1,0,1)
   for(kk in 1:(C+1)){
@@ -178,17 +217,15 @@ for(jj in 1:test_size){
       break
     }
   }
+  #y_tt[jj] = which.max(t[jj,])
 }
-Ey = rep(0,test_size)
-z = X_t\%*\%Eb
-t = exp(z)/(1+rowSums(exp(z)))
-t = cbind(t,1-rowSums(t))
-for(jj in 1:test_size){
-  Ey[jj] = which.max(t[jj,])
-}
+y_t = classnames[y_t]#
+Ey = predict.GAGA(fit,newx = X_t)
+cat("\n--------------------")
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
-cat("\n pacc:", cal.w.acc(as.character(Ey!=0),as.character(y_t!=0)))
+cat("\n pacc:", cal.w.acc(as.character(Ey),as.character(y_t)))
+cat("\n")
 
 # Cox
 set.seed(2022)
@@ -222,9 +259,27 @@ t[ind2] = runif(csNum,0,0.8)*t[ind2]
 y = cbind(t,1 - cs)
 colnames(y) = c("time", "status")
 #Estimation
-Eb = GAGA(X,y,alpha=2,family="cox")
+fit = GAGA(X,y,alpha=2,family="cox")
+Eb = fit$beta
+
+#Generate testing samples
+X_t = R1*rmvnorm(n=test_size, mean=rep(0, nrow(cov_mat)), sigma=cov_mat)
+z = X_t\%*\%beta_true
+u = runif(sample_size,0,1)
+t = ((-log(1-u)/(3*exp(z)))*100)^(0.1)
+cs = rep(0,test_size)
+csNum = round(censoringRate*test_size)
+ind1 = sample(1:test_size,test_size)
+ind2 = ind1[1:csNum]
+cs[ind2] = 1
+t[ind2] = runif(csNum,0,0.8)*t[ind2]
+y_t = cbind(t,1 - cs)
+colnames(y_t) = c("time", "status")
+#Prediction
+pred = predict.GAGA(fit,newx=X_t)
+
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
-
+cat("\n Cindex:", cal.cindex(pred,y_t))
 
 }
