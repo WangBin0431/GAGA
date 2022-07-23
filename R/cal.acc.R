@@ -4,7 +4,7 @@
 #' @param truelabels
 #'
 #' @return
-#' @export
+#' @export cal.acc
 #'
 #' @examples
 cal.acc <- function(predictions, truelabels) {

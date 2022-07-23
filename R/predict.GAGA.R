@@ -4,7 +4,7 @@
 #' @param newx
 #'
 #' @return
-#' @export
+#' @export predict.GAGA
 #'
 #' @examples
 predict.GAGA = function(fit,newx){
