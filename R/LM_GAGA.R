@@ -34,42 +34,24 @@
 #' rate = 0.5 #Proportion of value zero in beta
 #' # Set true beta
 #' zeroNum = round(rate*p_size)
-#' ind1 = sample(1:p_size,p_size)
-#' ind2 = ind1[1:zeroNum]
+#' ind = sample(1:p_size,zeroNum)
 #' beta_true = runif(p_size,0,R2)
+#' beta_true[ind] = 0
 #' X = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
 #' y=X%*%beta_true + rnorm(sample_size,mean=0,sd=2)
-#' # Estimate
+#' # Estimation
 #' fit = GAGA(X,y,alpha = 3,family="gaussian")
 #' Eb = fit$beta
+#' #Create testing data
+#' X_t = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
+#' y_t=X_t%*%beta_true + rnorm(sample_size,mean=0,sd=2)
+#' #Prediction
+#' Ey = predict.GAGA(fit,newx=X_t)
+#'
 #' cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 #' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
-#'
-#' # Binomial
-#' set.seed(2022)
-#' library(mvtnorm)
-#' p_size = 30
-#' sample_size=600
-#' R1 = 1
-#' R2 = 3
-#' rate = 0.5 #Proportion of value zero in beta
-#' # Set true beta
-#' zeroNum = round(rate*p_size)
-#' ind1 = sample(1:p_size,p_size)
-#' ind2 = ind1[1:zeroNum]
-#' beta_true = runif(p_size,R2*0.2,R2)
-#' beta_true[ind2] = 0
-#' X = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
-#' X[1:sample_size,1]=1
-#' t = 1/(1+exp(-X%*%beta_true))
-#' tmp = runif(sample_size,0,1)
-#' y = rep(0,sample_size)
-#' y[t>tmp] = 1
-#' # Estimate
-#' Eb = GAGA(X,y,family = "binomial", alpha = 1)
-#' cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
-#' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
-#'
+#' cat("\n perr:", norm(Ey-y_t,type="2")/sqrt(sample_size))
+
 LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fix_sigma=FALSE,sigm2_0 = 1,fdiag = FALSE){
 
   vnames=colnames(X)

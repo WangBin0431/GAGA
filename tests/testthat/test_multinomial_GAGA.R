@@ -19,10 +19,9 @@ R2 = 5
 beta_true = matrix(rep(0,p_size*C),c(p_size,C))
 zeroNum = round(rate*p_size)
 for(jj in 1:C){
-  ind1 = sample(1:p_size,p_size)
-  ind2 = ind1[1:zeroNum]
+  ind = sample(1:p_size,zeroNum)
   tmp = runif(p_size,0,R2)
-  tmp[ind2] = 0
+  tmp[ind] = 0
   beta_true[,jj] = tmp
 }
 

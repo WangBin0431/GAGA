@@ -54,10 +54,9 @@ R2 = 5
 rate = 0.5 #Proportion of value zero in beta
 # Set true beta
 zeroNum = round(rate*p_size)
-ind1 = sample(1:p_size,p_size)
-ind2 = ind1[1:zeroNum]
+ind = sample(1:p_size,zeroNum)#'
 beta_true = runif(p_size,0,R2)
-beta_true[ind2] = 0
+beta_true[ind] = 0
 X = R1*matrix(rnorm(sample_size * p_size), ncol = p_size)
 X[1:sample_size,1]=1
 y = rpois(sample_size,lambda = as.vector(exp(X\%*\%beta_true)))
@@ -67,5 +66,6 @@ fit = GAGA(X,y,alpha = 2,family="poisson")
 Eb = fit$beta
 cat("\n err:", norm(Eb-beta_true,type="2")/norm(beta_true,type="2"))
 cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
+
 
 }

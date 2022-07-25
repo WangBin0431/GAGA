@@ -18,10 +18,9 @@ censoringRate = 0.25 #Proportion of censoring data in observation data
 
 #Set true beta
 zeroNum = round(rate*p_size)
-ind1 = sample(1:p_size,p_size)
-ind2 = ind1[1:zeroNum]
+ind = sample(1:p_size,zeroNum)
 beta_true = runif(p_size,-R2,R2)
-beta_true[ind2] = 0
+beta_true[ind] = 0
 
 #Generate training samples
 cov_mat=matrix(1:p_size*p_size,p_size,p_size) ##covariance matrix
@@ -32,10 +31,9 @@ u = runif(sample_size,0,1)
 t = ((-log(1-u)/(3*exp(z)))*100)^(0.1)
 cs = rep(0,sample_size)
 csNum = round(censoringRate*sample_size)
-ind1 = sample(1:sample_size,sample_size)
-ind2 = ind1[1:csNum]
-cs[ind2] = 1
-t[ind2] = runif(csNum,0,0.8)*t[ind2]
+ind = sample(1:sample_size,csNum)
+cs[ind] = 1
+t[ind] = runif(csNum,0,0.8)*t[ind]
 y = cbind(t,1 - cs)
 colnames(y) = c("time", "status")
 
@@ -50,10 +48,9 @@ u = runif(sample_size,0,1)
 t = ((-log(1-u)/(3*exp(z)))*100)^(0.1)
 cs = rep(0,test_size)
 csNum = round(censoringRate*test_size)
-ind1 = sample(1:test_size,test_size)
-ind2 = ind1[1:csNum]
-cs[ind2] = 1
-t[ind2] = runif(csNum,0,0.8)*t[ind2]
+ind = sample(1:test_size,csNum)
+cs[ind] = 1
+t[ind] = runif(csNum,0,0.8)*t[ind]
 y_t = cbind(t,1 - cs)
 colnames(y_t) = c("time", "status")
 
