@@ -7,21 +7,23 @@ At present, GAGA can deal with "gaussian", "binomial", "poisson", "multinomial" 
 For the first edition of the paper, see: <https://arxiv.org/abs/1911.00658v1> The first edition of the paper only proves the theoretical properties of Gaga linear model when the load matrix is orthogonal. At present, Xiaofei Wang has completed the proof of the theoretical properties when the load matrix is non-orthogonal. We have submitted the manuscript and hope to be admitted.
 
 ## Setup
+
 ### If OS is Windows
+
 Install from Github:
 
-1. Install Rtools from https://cran.r-project.org/bin/windows/Rtools/
+1.  Install Rtools from <https://cran.r-project.org/bin/windows/Rtools/>
 
-2. Install devtools package **install.packages("devtools")**
+2.  Install devtools package: ***install.packages("devtools")***
 
-3. Install GAGA package  **devtools::install_github("WangBin0431/GAGA")**
+3.  Install GAGA package: ***devtools::install_github("WangBin0431/GAGA")***
 
-4. Use **? GAGA** to get help doc 
+4.  Use ***?GAGA*** to get help doc
 
 Install from package file:
 
-1. Download GAGA package from: https://drive.google.com/drive/folders/1IGaYlAIedbjBLExdf8VdooUlhZ9jLTAH?usp=sharing
+1.  Download GAGA package from: <https://drive.google.com/drive/folders/1IGaYlAIedbjBLExdf8VdooUlhZ9jLTAH?usp=sharing>
 
-2. Install it.
+2.  Install it.
 
-3. Use **? GAGA** to get help doc
+3.  Use ***?GAGA*** to get help doc
