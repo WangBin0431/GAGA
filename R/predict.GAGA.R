@@ -1,5 +1,6 @@
-#' Title
+#' Get predictions from a GAGA fit object
 #'
+#' Gives fitted values from a fitted GAGA object.
 #' @param fit Fitted "GAGA" object.
 #' @param newx Matrix of new values for x at which predictions are to be made. Must be a
 #' matrix.  If the intercept term needs to be considered in the estimation process, then
