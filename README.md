@@ -27,5 +27,3 @@ Install from package file:
 2.  Install it.
 
 3.  Use `?GAGA` to get help doc
-
-![](images/%E7%8E%8B%E6%96%8C%E7%85%A7%E7%89%87.jpg)
