@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict.GAGA.R
 \name{predict.GAGA}
 \alias{predict.GAGA}
-\title{Title}
+\title{Get predictions from a GAGA fit object}
 \usage{
 \method{predict}{GAGA}(fit, newx)
 }
@@ -17,7 +17,7 @@ the first column of \code{X} must be all 1s.}
 Predictions
 }
 \description{
-Title
+Gives fitted values from a fitted GAGA object.
 }
 \examples{
 set.seed(2022)
