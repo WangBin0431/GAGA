@@ -210,7 +210,7 @@
 #' censoringRate = 0.25 #Proportion of censoring data in observation data
 #' # Set true beta
 #' zeroNum = round(rate*p_size)
-#' ind = sample(1:p_size,p_size)#'
+#' ind = sample(1:p_size,zeroNum)#'
 #' beta_true = runif(p_size,-R2,R2)
 #' beta_true[ind] = 0
 #' # Generate training samples
