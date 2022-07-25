@@ -14,11 +14,11 @@ Install from Github:
 
 1.  Install Rtools from <https://cran.r-project.org/bin/windows/Rtools/>
 
-2.  Install devtools package: ***install.packages("devtools")***
+2.  Install devtools package: `install.packages("devtools")`
 
-3.  Install GAGA package: ***devtools::install_github("WangBin0431/GAGA")***
+3.  Install GAGA package: `devtools::install_github("WangBin0431/GAGA")`
 
-4.  Use ***?GAGA*** to get help doc
+4.  Use `?GAGA` to get help doc
 
 Install from package file:
 
@@ -26,4 +26,4 @@ Install from package file:
 
 2.  Install it.
 
-3.  Use ***?GAGA*** to get help doc
+3.  Use `?GAGA` to get help doc
