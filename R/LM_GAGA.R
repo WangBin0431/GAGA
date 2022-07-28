@@ -100,7 +100,12 @@ LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,f
         tmpQ = sum(dB<=100)
         if(tmpQ == 0){
           beta = rep(0,Q)
-          return(as.vector(beta))
+          fit$beta = as.vector(beta)
+          names(fit$beta) = vnames
+          fit$alpha = alpha
+          fit$itrNum = itrNum
+          fit$fdiag = fdiag
+          return(fit)
         }
         if(tmpQ<=N){
           X_sub = X[,dB<=100]
