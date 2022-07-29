@@ -38,9 +38,9 @@ y = cbind(t,1 - cs)
 colnames(y) = c("time", "status")
 
 #Estimation
-fit = GAGA(X,y,alpha=2,family="cox")
+fit = GAGA(X,y,alpha=2,family="cox",itrNum = 100)
 Eb = fit$beta
-
+# cat("\n exit itrNum: ", fit$itrNum)
 #Generate testing samples
 X_t = R1*rmvnorm(n=test_size, mean=rep(0, nrow(cov_mat)), sigma=cov_mat)
 z = X_t%*%beta_true
