@@ -1,4 +1,5 @@
 #' Fit a logistic model via the Global Adaptive Generative Adjustment algorithm
+#'
 #' @param X Input matrix, of dimension nobs*nvars; each row is an observation.
 #' If the intercept term needs to be considered in the estimation process, then the first column of \code{X} must be all 1s.
 #' @param y should be either a factor with two levels.
@@ -7,6 +8,7 @@
 #' @param itrNum The number of iteration steps. In general, 20 steps are enough.
 #' If the condition number of \code{X} is large, it is recommended to greatly increase the
 #' number of iteration steps.
+#' @param thresh Convergence threshold for beta Change, if \code{max(abs(beta-beta_old))<threshold}, return.
 #' @param flag It identifies whether to make model selection. The default is \code{TRUE}.
 #' @param lamda_0 The initial value of the regularization parameter for ridge regression.
 #' The running result of the algorithm is not sensitive to this value.
@@ -56,8 +58,9 @@
 #' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 #' cat("\n pacc:", cal.w.acc(as.character(Ey),as.character(y_t)))
 #'
-logistic_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.001,fdiag=TRUE){
+logistic_GAGA = function(X,y,alpha=1,itrNum=30,thresh=1.e-3,flag=TRUE,lamda_0=0.001,fdiag=TRUE){
 
+  exitflag = FALSE
   eps = 1.e-19
   n = nrow(X)
   p = ncol(X)
@@ -84,7 +87,7 @@ logistic_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.001,fdiag=TRU
   b_old = b
 
   for (index in 1:itrNum){
-    if(index == itrNum){
+    if(index == itrNum || exitflag){
       db = (b-b_old)
       b = b/alpha
     }
@@ -106,19 +109,27 @@ logistic_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.001,fdiag=TRU
 
     inv_b = E_pow_beta/alpha
 
-    if(flag&&(index==itrNum)){
+    if(flag&&(index==itrNum || exitflag)){
       cov0 = getDDfu.logistic(beta,X,y,rep(0,p),fdiag)
       beta[E_pow_beta<diag(cov0)] = 0
+      break
     }else{
       b_old = b
       b = 1/inv_b
+    }
+
+    if(index==1){
+      beta_old = beta
+    }else{
+      if(max(abs(beta-beta_old))<thresh)exitflag = TRUE
+      beta_old = beta
     }
   }#for (index in 1:itrNum)
 
   fit$beta = as.vector(beta)
   names(fit$beta) = vnames
   fit$alpha = alpha
-  fit$itrNum = itrNum
+  fit$itrNum = index
   fit$fdiag = fdiag
   return(fit)
 }

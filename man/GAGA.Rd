@@ -10,6 +10,7 @@ GAGA(
   family = c("gaussian", "binomial", "poisson", "multinomial", "cox"),
   alpha = 2,
   itrNum = 20,
+  thresh = 0.001,
   QR_flag = FALSE,
   flag = TRUE,
   lamda_0 = 0.001,
@@ -37,6 +38,8 @@ but when the collinearity of the load matrix is serious, the hyperparameters can
 \item{itrNum}{The number of iteration steps. In general, 20 steps are enough.
 If the condition number of \code{X} is large, it is recommended to greatly increase the
 number of iteration steps.}
+
+\item{thresh}{Convergence threshold for beta Change, if \code{max(abs(beta-beta_old))<threshold}, return.}
 
 \item{QR_flag}{It identifies whether to use QR decomposition to speed up the algorithm.
 Currently only valid for linear models.}

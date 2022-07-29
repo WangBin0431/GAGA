@@ -9,6 +9,7 @@ cox_GAGA(
   t,
   alpha = 2,
   itrNum = 20,
+  thresh = 0.001,
   flag = TRUE,
   lamda_0 = 0.5,
   fdiag = TRUE
@@ -26,6 +27,8 @@ the other column must be named "status", and consists of 0 and 1, 0 indicates th
 \item{itrNum}{The number of iteration steps. In general, 20 steps are enough.
 If the condition number of \code{X} is large, it is recommended to greatly increase the
 number of iteration steps.}
+
+\item{thresh}{Convergence threshold for beta Change, if \code{max(abs(beta-beta_old))<threshold}, return.}
 
 \item{flag}{It identifies whether to make model selection. The default is \code{TRUE}.}
 

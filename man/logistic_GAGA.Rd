@@ -9,6 +9,7 @@ logistic_GAGA(
   y,
   alpha = 1,
   itrNum = 30,
+  thresh = 0.001,
   flag = TRUE,
   lamda_0 = 0.001,
   fdiag = TRUE
@@ -26,6 +27,8 @@ When the collinearity of the load matrix is serious, the hyperparameters can be 
 \item{itrNum}{The number of iteration steps. In general, 20 steps are enough.
 If the condition number of \code{X} is large, it is recommended to greatly increase the
 number of iteration steps.}
+
+\item{thresh}{Convergence threshold for beta Change, if \code{max(abs(beta-beta_old))<threshold}, return.}
 
 \item{flag}{It identifies whether to make model selection. The default is \code{TRUE}.}
 

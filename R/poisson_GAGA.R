@@ -13,6 +13,7 @@
 #' @param itrNum The number of iteration steps. In general, 20 steps are enough.
 #' If the condition number of \code{X} is large, it is recommended to greatly increase the
 #' number of iteration steps.
+#' @param thresh Convergence threshold for beta Change, if \code{max(abs(beta-beta_old))<threshold}, return.
 #' @param flag It identifies whether to make model selection. The default is \code{TRUE}.
 #' @param lamda_0 The initial value of the regularization parameter for ridge regression.
 #' The running result of the algorithm is not sensitive to this value.
@@ -47,8 +48,9 @@
 #' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 #'
 #'
-poisson_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.5,fdiag=TRUE){
+poisson_GAGA = function(X,y,alpha=1,itrNum=30,thresh=1.e-3,flag=TRUE,lamda_0=0.5,fdiag=TRUE){
 
+  exitflag = FALSE
   vnames=colnames(X)
   if(is.null(vnames))vnames=paste("V",seq(ncol(X)),sep="")
   fit = list()
@@ -61,7 +63,7 @@ poisson_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.5,fdiag=TRUE){
   b_old = b
 
   for (index in 1:itrNum){
-    if(index == itrNum){
+    if(index == itrNum || exitflag){
       db = (b-b_old)
       b = b/alpha
     }
@@ -84,26 +86,32 @@ poisson_GAGA = function(X,y,alpha=1,itrNum=30,flag=TRUE,lamda_0=0.5,fdiag=TRUE){
 
     inv_b = E_pow_beta/alpha
 
-    if(flag&&(index==itrNum)){
+    if(flag&&(index==itrNum || exitflag)){
       tmpQ = sum(db<=100)
       if(tmpQ == 0){
         beta = rep(0,p)
-        return(as.vector(beta))
+      }else{
+        cov0 = getDDfu.poisson(beta,X,y,rep(0,p),fdiag)
+        beta[E_pow_beta<diag(cov0)] = 0
+        beta[db>20] = 0;
       }
-      cov0 = getDDfu.poisson(beta,X,y,rep(0,p),fdiag)
-      beta[E_pow_beta<diag(cov0)] = 0
-      beta[db>20] = 0;
-
+      break
     }else{
       b_old = b
       b = 1/inv_b
     }
 
+    if(index==1){
+      beta_old = beta
+    }else{
+      if(max(abs(beta-beta_old))<thresh)exitflag = TRUE
+      beta_old = beta
+    }
   }#for (index in 1:itrNum)
   fit$beta = as.vector(beta)
   names(fit$beta) = vnames
   fit$alpha = alpha
-  fit$itrNum = itrNum
+  fit$itrNum = index
   fit$fdiag = fdiag
   return(fit)
 }

@@ -9,6 +9,7 @@
 #' @param itrNum The number of iteration steps. In general, 20 steps are enough.
 #' If the condition number of \code{X} is large, it is recommended to greatly increase the
 #' number of iteration steps.
+#' @param thresh Convergence threshold for beta Change, if \code{max(abs(beta-beta_old))<threshold}, return.
 #' @param flag It identifies whether to make model selection. The default is \code{TRUE}.
 #' @param lamda_0 The initial value of the regularization parameter for ridge regression.
 #' The running result of the algorithm is not sensitive to this value.
@@ -101,8 +102,9 @@
 #' cat("\n pacc:", cal.w.acc(as.character(Ey),as.character(y_t)))
 #' cat("\n")
 
-multinomial_GAGA = function(X,y,alpha=2,itrNum=50,flag=TRUE,lamda_0=0.001,fdiag=TRUE){
-  #browser()
+multinomial_GAGA = function(X,y,alpha=2,itrNum=50,thresh=1.e-3,flag=TRUE,lamda_0=0.001,fdiag=TRUE){
+
+  exitflag = FALSE
   eps = 1.e-19
   N = nrow(X)
   P = ncol(X)
@@ -134,7 +136,7 @@ multinomial_GAGA = function(X,y,alpha=2,itrNum=50,flag=TRUE,lamda_0=0.001,fdiag=
   b_old = b
 
   for (index in 1:itrNum){
-    if(index == itrNum){
+    if(index == itrNum || exitflag){
       db = (b-b_old)
       b = b/alpha
     }
@@ -156,10 +158,10 @@ multinomial_GAGA = function(X,y,alpha=2,itrNum=50,flag=TRUE,lamda_0=0.001,fdiag=
 
     inv_b = E_pow_beta/alpha
 
-    if(flag&&(index==itrNum)){
+    if(flag&&(index==itrNum || exitflag)){
       cov0 = getDDfu.multinomial(beta,X,y,matrix(rep(0,P*C),c(P,C)),fdiag)
-
       beta[E_pow_beta<diag(cov0)] = 0
+      break
       # beta[db>20] = 0;
 
     }else{
@@ -168,12 +170,19 @@ multinomial_GAGA = function(X,y,alpha=2,itrNum=50,flag=TRUE,lamda_0=0.001,fdiag=
       sigm2 = 1
     }
 
+    if(index==1){
+      beta_old = beta
+    }else{
+      if(max(abs(beta-beta_old))<thresh)exitflag = TRUE
+      beta_old = beta
+    }
+
   }#for (index in 1:itrNum)
   fit$beta = beta
   rownames(fit$beta) = vnames
   colnames(fit$beta) = classnames[1:C]
   fit$alpha = alpha
-  fit$itrNum = itrNum
+  fit$itrNum = index
   fit$fdiag = fdiag
   return(fit)
 }

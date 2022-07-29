@@ -18,6 +18,7 @@
 #' @param itrNum The number of iteration steps. In general, 20 steps are enough.
 #' If the condition number of \code{X} is large, it is recommended to greatly increase the
 #' number of iteration steps.
+#' @param thresh Convergence threshold for beta Change, if \code{max(abs(beta-beta_old))<threshold}, return.
 #' @param QR_flag It identifies whether to use QR decomposition to speed up the algorithm.
 #' Currently only valid for linear models.
 #' @param flag It identifies whether to make model selection. The default is \code{TRUE}.
@@ -251,7 +252,7 @@
 #' cat("\n Cindex:", cal.cindex(pred,y_t))
 #'
 
-GAGA <- function(X,y,family=c("gaussian","binomial","poisson","multinomial","cox"),alpha=2,itrNum=20,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fdiag=TRUE) {
+GAGA <- function(X,y,family=c("gaussian","binomial","poisson","multinomial","cox"),alpha=2,itrNum=20,thresh=1.e-3,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fdiag=TRUE) {
 
   if(!is.character(family)){
     print("Please check the input of family")
@@ -260,11 +261,11 @@ GAGA <- function(X,y,family=c("gaussian","binomial","poisson","multinomial","cox
 
   family=match.arg(family)
   beta=switch(family,
-             "gaussian"=LM_GAGA(X,y,alpha=alpha,itrNum=itrNum,QR_flag=QR_flag,flag=flag,lamda_0=lamda_0,fix_sigma=FALSE,sigm2_0 = 1),
-             "poisson"=poisson_GAGA(X,y,alpha=alpha,itrNum=itrNum,flag=flag,lamda_0=lamda_0,fdiag=fdiag),
-             "binomial"=logistic_GAGA(X,y,alpha=alpha,itrNum=itrNum,flag=flag,lamda_0=lamda_0,fdiag=fdiag),
-             "multinomial"=multinomial_GAGA(X,y,alpha=alpha,itrNum=itrNum,flag=flag,lamda_0=lamda_0,fdiag=fdiag),
-             "cox"=cox_GAGA(X,y,alpha=alpha,itrNum=itrNum,flag=flag,lamda_0=lamda_0,fdiag=fdiag)
+             "gaussian"=LM_GAGA(X,y,alpha=alpha,itrNum=itrNum,thresh=thresh,QR_flag=QR_flag,flag=flag,lamda_0=lamda_0,fix_sigma=FALSE,sigm2_0 = 1),
+             "poisson"=poisson_GAGA(X,y,alpha=alpha,itrNum=itrNum,thresh=thresh,flag=flag,lamda_0=lamda_0,fdiag=fdiag),
+             "binomial"=logistic_GAGA(X,y,alpha=alpha,itrNum=itrNum,thresh=thresh,flag=flag,lamda_0=lamda_0,fdiag=fdiag),
+             "multinomial"=multinomial_GAGA(X,y,alpha=alpha,itrNum=itrNum,thresh=thresh,flag=flag,lamda_0=lamda_0,fdiag=fdiag),
+             "cox"=cox_GAGA(X,y,alpha=alpha,itrNum=itrNum,thresh=thresh,flag=flag,lamda_0=lamda_0,fdiag=fdiag)
             )
 
   return(beta)

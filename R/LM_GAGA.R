@@ -10,6 +10,7 @@
 #' @param itrNum The number of iteration steps. In general, 20 steps are enough.
 #' If the condition number of \code{X} is large, it is recommended to greatly increase the
 #' number of iteration steps.
+#' @param thresh Convergence threshold for beta Change, if \code{max(abs(beta-beta_old))<threshold}, return.
 #' @param QR_flag It identifies whether to use QR decomposition to speed up the algorithm.
 #' Currently only valid for linear models.
 #' @param flag It identifies whether to make model selection. The default is \code{TRUE}.
@@ -52,8 +53,9 @@
 #' cat("\n acc:", cal.w.acc(as.character(Eb!=0),as.character(beta_true!=0)))
 #' cat("\n perr:", norm(Ey-y_t,type="2")/sqrt(sample_size))
 
-LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fix_sigma=FALSE,sigm2_0 = 1,fdiag = FALSE){
+LM_GAGA = function(X,y,alpha=3,itrNum=50,thresh=1.e-3,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fix_sigma=FALSE,sigm2_0 = 1,fdiag = FALSE){
 
+  exitflag = FALSE
   vnames=colnames(X)
   if(is.null(vnames))vnames=paste("V",seq(ncol(X)),sep="")
   fit = list()
@@ -82,28 +84,25 @@ LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,f
       if(sigm2 == 0)
         sigm2 = eps
 
-      if(index==itrNum){
+      if(index==itrNum || exitflag){
         dB = diag(B-B_old)
         B = B/alpha
       }
       beta = getEb.LM(XtX,Xty,sigm2,B)
-
       cov_beta = getEbb.LM(XtX,sigm2,B)
-
       E_pow_beta_M = cov_beta + beta%*%t(beta)
-
       E_pow_beta = diag(E_pow_beta_M)
 
       inv_b = E_pow_beta/alpha
 
-      if(flag&&(index==itrNum)){
+      if(flag&&(index==itrNum || exitflag)){
         tmpQ = sum(dB<=100)
         if(tmpQ == 0){
           beta = rep(0,Q)
           fit$beta = as.vector(beta)
           names(fit$beta) = vnames
           fit$alpha = alpha
-          fit$itrNum = itrNum
+          fit$itrNum = index
           fit$fdiag = fdiag
           return(fit)
         }
@@ -115,7 +114,6 @@ LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,f
           beta_sub[E_pow_beta_sub<CRB_sub] = 0;
           beta[dB<=100] = beta_sub;
           beta[dB>100] = 0;
-
         }
         else{
           pow_beta = beta^2
@@ -137,7 +135,7 @@ LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,f
         fit$beta = as.vector(beta)
         names(fit$beta) = vnames
         fit$alpha = alpha
-        fit$itrNum = itrNum
+        fit$itrNum = index
         fit$fdiag = fdiag
         return(fit)
       }#if(flag&&(index==itrNum))
@@ -152,6 +150,13 @@ LM_GAGA = function(X,y,alpha=3,itrNum=50,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,f
         #sigm2 = (yty-2*t(beta)%*%Xty)/N + sum(diag(E_pow_beta_M%*%XtX))/N
         sigm2 = (yty-2*t(beta)%*%Xty)/N + sum(E_pow_beta_M*XtX)/N
         sigm2 = as.vector(sigm2)
+      }
+
+      if(index==1){
+        beta_old = beta
+      }else{
+        if(max(abs(beta-beta_old))<thresh)exitflag = TRUE
+        beta_old = beta
       }
 
     }#for (index in 1:itrNum)
