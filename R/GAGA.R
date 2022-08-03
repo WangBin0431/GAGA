@@ -252,7 +252,7 @@
 #' cat("\n Cindex:", cal.cindex(pred,y_t))
 #'
 
-GAGA <- function(X,y,family=c("gaussian","binomial","poisson","multinomial","cox"),alpha=2,itrNum=20,thresh=1.e-3,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fdiag=TRUE) {
+GAGA <- function(X,y,family=c("gaussian","binomial","poisson","multinomial","cox"),alpha=2,itrNum=500,thresh=1.e-3,QR_flag=FALSE,flag=TRUE,lamda_0=0.001,fdiag=TRUE) {
 
   if(!is.character(family)){
     print("Please check the input of family")

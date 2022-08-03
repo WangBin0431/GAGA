@@ -124,7 +124,7 @@ cox_GAGA = function(X,t,alpha=2,itrNum=20,thresh=1.e-3,flag=TRUE,lamda_0=0.5,fdi
     if(flag&&(index==itrNum || exitflag)){
       tmpQ = sum(db<=100)
       if(tmpQ == 0){
-        beta = rep(0,Q)
+        beta = rep(0,p)
         fit$beta = as.vector(beta)
         names(fit$beta) = vnames
         fit$alpha = alpha

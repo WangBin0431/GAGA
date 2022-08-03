@@ -23,7 +23,7 @@ tmp = runif(sample_size,0,1)
 y = rep(0,sample_size)
 y[t>tmp] = 1
 
-fit = GAGA(X,y,family = "binomial", alpha = 1, itrNum = 50)
+fit = GAGA(X,y,family = "binomial", alpha = 1)
 Eb = fit$beta
 
 #Generate test samples

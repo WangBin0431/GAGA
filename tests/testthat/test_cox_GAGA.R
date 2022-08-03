@@ -38,7 +38,7 @@ y = cbind(t,1 - cs)
 colnames(y) = c("time", "status")
 
 #Estimation
-fit = GAGA(X,y,alpha=2,family="cox",itrNum = 100)
+fit = GAGA(X,y,alpha=2,family="cox")
 Eb = fit$beta
 # cat("\n exit itrNum: ", fit$itrNum)
 #Generate testing samples
