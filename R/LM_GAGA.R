@@ -294,8 +294,12 @@ OMP = function(X,y,L,eps = 0){
     proj = Xt%*%residual
     pos = which.max(abs(proj))
     indx[j] = pos
+    Xt[j,] = 0
     #browser()
-    a = ginv(X[,indx[1:j]])%*%y
+    X_sub = as.matrix(X[,indx[1:j]])
+    X_subt = t(X_sub)
+    a = solve(X_subt%*%X_sub+1e-12*diag(rep(1,j)),X_subt%*%y)
+
     residual = y - X[,indx[1:j]]%*%a
 
     if(sum(residual^2)<=eps){
