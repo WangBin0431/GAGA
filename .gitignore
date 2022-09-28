@@ -2,5 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-README.md.bak
-.gitignore
+src/*.o
+src/*.so
+src/*.dll

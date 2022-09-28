@@ -60,13 +60,9 @@
 #'
 logistic_GAGA = function(X,y,alpha=1,itrNum=30,thresh=1.e-3,flag=TRUE,lamda_0=0.001,fdiag=TRUE){
 
-  exitflag = FALSE
-  eps = 1.e-19
-  n = nrow(X)
-  p = ncol(X)
-  # refers to "lognet.R" of glmnet
+
   vnames=colnames(X)
-  if(is.null(vnames))vnames=paste("V",seq(p),sep="")
+  if(is.null(vnames))vnames=paste("V",seq(ncol(X)),sep="")
 
   y=as.factor(y)
   ntab=table(y)
@@ -83,115 +79,12 @@ logistic_GAGA = function(X,y,alpha=1,itrNum=30,thresh=1.e-3,flag=TRUE,lamda_0=0.
   fit$classnames = classnames
   class(fit) = c("GAGA","binomial")
 
-  b = rep(1,p)*lamda_0
-  b_old = b
+  tmpfit = cpp_logistic_gaga(X, as.matrix(y), alpha, itrNum, thresh, flag, lamda_0, fdiag)
 
-  for (index in 1:itrNum){
-    if(index == itrNum || exitflag){
-      db = (b-b_old)
-      b = b/alpha
-    }
-
-    if(index==1){
-      beta = rep(0,p)
-      cov_beta = getDDfu.logistic(beta,X,y,b,fdiag)
-      D0 = cov_beta
-    }
-    b = as.vector(b)
-    bfgsItr = 20
-    #browser()
-    beta  = getEb.logistic(X,y,b,beta,D0,bfgsItr,fdiag)
-    cov_beta = getDDfu.logistic(beta,X,y,b,fdiag)
-
-    D0 = cov_beta
-
-    E_pow_beta = diag(cov_beta) + beta*beta
-
-    inv_b = E_pow_beta/alpha
-
-    if(flag&&(index==itrNum || exitflag)){
-      cov0 = getDDfu.logistic(beta,X,y,rep(0,p),fdiag)
-      beta[E_pow_beta<diag(cov0)] = 0
-      break
-    }else{
-      b_old = b
-      b = 1/inv_b
-    }
-
-    if(index==1){
-      beta_old = beta
-    }else{
-      if(max(abs(beta-beta_old))<thresh)exitflag = TRUE
-      beta_old = beta
-    }
-  }#for (index in 1:itrNum)
-
-  fit$beta = as.vector(beta)
+  fit$beta = as.vector(tmpfit$beta)
   names(fit$beta) = vnames
   fit$alpha = alpha
-  fit$itrNum = index
+  fit$itrNum = tmpfit$itrNum
   fit$fdiag = fdiag
   return(fit)
-}
-##############################################################################
-
-#################################################################################
-getEb.logistic  = function(X,y,b,beta,D0,bfgsItr,fdiag){
-  n = nrow(X)
-  p = ncol(X)
-  #bfgs
-  D = D0
-  u = beta
-  g = Dfu.logistic(u,X,y,b)
-  for(ii in 1:bfgsItr){
-    d = -D%*%g
-    LL = optimize(Func_lambda.logistic, c(0, 2), tol = 1.e-19, u=u, X=X, y=y, b=b,d=d)
-    #browser()
-    u = u + LL$minimum*d
-    D = getDDfu.logistic(u,X,y,b,fdiag)
-    g = Dfu.logistic(u,X,y,b)
-    if(norm(g,type="2")/p<1.e-16){
-      break;
-    }
-  }
-  return(u)
-}
-
-
-
-sigmod = function(x){1/(1+exp(-1*x))}
-
-Func_u.logistic = function(u,X,y,b){
-
-  eps = 2.2204e-16
-  Xu = X%*%u
-  tmp1 = y*log(sigmod(Xu)+eps)
-  tmp2 = (1-y)*log(1-sigmod(Xu)+eps)
-  v = -1*sum(tmp1 + tmp2) + 0.5*sum(b*(u^2))
-  return(v)
-}
-
-Func_lambda.logistic = function(lambda,u,X,y,b,d){
-  return(Func_u.logistic(u+lambda*d,X,y,b))
-}
-
-Dfu.logistic = function(u,X,y,b){
-  Xu = X%*%u
-  tmp = y - sigmod(Xu)
-  g = -1*(t(X)%*%tmp)+(u*b)
-  return(g)
-}
-
-getDDfu.logistic = function(u,X,y,b,fdiag){
-  if(fdiag==FALSE){
-    h = sigmod(X%*%u)
-    #gg = solve(t(X)%*%diag(as.vector(h*(1-h)))%*%X+diag(b),tol = 0)
-    #gg = ginv(t(X)%*%diag(as.vector(h*(1-h)))%*%X+diag(b))
-    gg = MASS::ginv(t(X)%*%(X*as.vector(h*(1-h)))+diag(b))
-    return(gg)
-  }else{
-    h = sigmod(X%*%u)
-    gg = diag(1/diag(t(X)%*%(X*as.vector(h*(1-h)))+diag(b)))
-    return(gg)
-  }
 }

@@ -7,7 +7,7 @@
 multinomial_GAGA(
   X,
   y,
-  alpha = 2,
+  alpha = 1,
   itrNum = 50,
   thresh = 0.001,
   flag = TRUE,

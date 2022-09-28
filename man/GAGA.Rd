@@ -9,7 +9,7 @@ GAGA(
   y,
   family = c("gaussian", "binomial", "poisson", "multinomial", "cox"),
   alpha = 2,
-  itrNum = 20,
+  itrNum = 500,
   thresh = 0.001,
   QR_flag = FALSE,
   flag = TRUE,
