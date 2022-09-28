@@ -26,8 +26,6 @@ Install from package file:
 
 3.  Use `?GAGA` to get help doc
 
-### Other OS environments have not been tested.
-
 ## Tip
 
 Improve R performance by installing optimized BLAS libraries.
