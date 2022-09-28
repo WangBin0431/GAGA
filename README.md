@@ -8,8 +8,6 @@ For the first edition of the paper, see: <https://arxiv.org/abs/1911.00658v1> Th
 
 ## Setup
 
-### If OS is Windows
-
 Install from Github:
 
 1.  Install Rtools from <https://cran.r-project.org/bin/windows/Rtools/>
