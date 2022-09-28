@@ -1,6 +1,6 @@
 # multinomial
 set.seed(2022)
-library(mvtnorm)
+
 cat("\n")
 cat("Test multinomial GAGA\n")
 

@@ -1,6 +1,6 @@
 # binomial
 set.seed(2022)
-library(mvtnorm)
+
 cat("\n")
 cat("Test binomial GAGA\n")
 p_size = 30

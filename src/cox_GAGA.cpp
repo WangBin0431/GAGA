@@ -63,8 +63,8 @@ double Func_u_COX(Eigen::MatrixXd const &u, Eigen::MatrixXd const &X, Eigen::Mat
 
 double Func_lambda_COX(double lambda, std::vector<Eigen::MatrixXd const*> const &Plist) {
   if (Plist.size() != 8) {
-    cerr << "Func_lambda_logistic need 8 input parameters!" << endl;
-    exit(-1);
+    //std::cerr << "Func_lambda_logistic need 8 input parameters!" << std::endl;
+    return 10000;
   }
   Eigen::MatrixXd const*u = Plist[0];
   Eigen::MatrixXd const*X = Plist[1];

@@ -28,8 +28,8 @@ double Func_u_logistic(Eigen::MatrixXd const &u, Eigen::MatrixXd const &X, Eigen
 
 double Func_lambda_logistic(double lambda, std::vector<Eigen::MatrixXd const*> const &Plist) {
   if (Plist.size() != 5) {
-    cerr << "Func_lambda_logistic need 5 input parameters!" << endl;
-    exit(-1);
+    //std::cerr << "Func_lambda_logistic need 5 input parameters!" << std::endl;
+    return 10000;
   }
   Eigen::MatrixXd const*u = Plist[0];
   Eigen::MatrixXd const*X = Plist[1];

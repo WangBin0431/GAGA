@@ -1,6 +1,6 @@
 # cox
 set.seed(2022)
-library(mvtnorm)
+
 cat("\n")
 cat("Test cox GAGA\n")
 

@@ -28,10 +28,10 @@
 #' ty = rexp(N, hx)
 #' tcens = rbinom(n = N, prob = 0.3, size = 1)  # censoring indicator
 #' y = cbind(time = ty, status = 1 - tcens)  # y=Surv(ty,1-tcens) with library(survival)
-#' fit = GAGA(x, y, family = "cox") # this line in Cindex.R is \code{fit = glmnet(x, y, family = "cox")}
-#' pred = predict(fit, newx = x)
-#' apply(pred, 2, Cindex, y=y)
-#' cv.glmnet(x, y, family = "cox", type.measure = "C")
+#' fit = GAGA(x, y, family = "cox")
+#' pred = predict.GAGA(fit, newx = x)
+#' cat("\n Cindex:", cal.cindex(pred, y))
+#'
 #'
 #' @export cal.cindex
 cal.cindex=function(pred,y,weights=rep(1,nrow(y))){

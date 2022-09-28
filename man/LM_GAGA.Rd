@@ -46,6 +46,8 @@ The running result of the algorithm is not sensitive to this value.}
 \code{fix_sigma=FALSE} updates the variance estimate in each loop.}
 
 \item{sigm2_0}{The initial variance of the Gaussian noise.}
+
+\item{fdiag}{It identifies whether to use diag Approximation to speed up the algorithm.}
 }
 \value{
 Coefficient vector.

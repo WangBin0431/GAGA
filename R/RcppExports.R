@@ -21,7 +21,3 @@ cpp_poisson_gaga <- function(X, y, s_alpha, s_itrNum, s_thresh, s_flag, s_lamda_
     .Call(`_GAGA_cpp_poisson_gaga`, X, y, s_alpha, s_itrNum, s_thresh, s_flag, s_lamda_0, s_fdiag)
 }
 
-rcpp_hello <- function() {
-    .Call(`_GAGA_rcpp_hello`)
-}
-

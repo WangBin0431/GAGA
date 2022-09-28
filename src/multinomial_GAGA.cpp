@@ -21,8 +21,8 @@ double Func_u_multinomial(Eigen::MatrixXd const &u, Eigen::MatrixXd const &X, Ei
 
 double Func_lambda_multinomial(double lambda, std::vector<Eigen::MatrixXd const*> const &Plist) {
   if (Plist.size() != 5) {
-    cerr << "Func_lambda_logistic need 5 input parameters!" << endl;
-    exit(-1);
+    //std::cerr << "Func_lambda_logistic need 5 input parameters!" << std::endl;
+    return 10000;
   }
   Eigen::MatrixXd const*u = Plist[0];
   Eigen::MatrixXd const*X = Plist[1];

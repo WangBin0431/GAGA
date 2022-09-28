@@ -1,7 +1,7 @@
 # Gaussian
 # Gaussian
 set.seed(2022)
-library(mvtnorm)
+
 cat("\n")
 cat("Test LM GAGA\n")
 p_size = 30

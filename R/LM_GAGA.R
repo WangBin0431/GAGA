@@ -20,7 +20,7 @@
 #' \code{fix_sigma=TRUE} uses the initial variance as the variance estimate in each loop.
 #' \code{fix_sigma=FALSE} updates the variance estimate in each loop.
 #' @param sigm2_0 The initial variance of the Gaussian noise.
-#' @fdiag It identifies whether to use diag Approximation to speed up the algorithm.
+#' @param fdiag It identifies whether to use diag Approximation to speed up the algorithm.
 #'
 #' @return Coefficient vector.
 #' @export LM_GAGA

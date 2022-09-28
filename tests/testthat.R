@@ -8,5 +8,6 @@
 
 library(testthat)
 library(GAGA)
+library(mvtnorm)
 
 test_check("GAGA")

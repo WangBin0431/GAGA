@@ -13,9 +13,9 @@ Description: Fits linear, logistic and multinomial, poisson, and Cox regression 
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 1.0.9), RcppEigen, survival
+Imports: Rcpp (>= 1.0.9), RcppEigen, survival, mvtnorm
 LinkingTo: Rcpp, RcppEigen
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
