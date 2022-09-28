@@ -30,4 +30,6 @@ Install from package file:
 
 ## Tip
 
-Improve R performance by installing optimized BLAS libraries
+Improve R performance by installing optimized BLAS libraries.
+
+**If you like this program, please give me a star. Thank you.**
