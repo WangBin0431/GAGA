@@ -31,3 +31,14 @@ Install from package file:
 Improve R performance by installing optimized BLAS libraries.
 
 **If you like this program, please give me a star. Thank you.**
+
+# Participants
+
+Bin Wang, eatingbeen@hotmail.com, <https://scholar.google.com/citations?user=7HrcFqEAAAAJ&hl=en>
+
+Xiaofei Wang, <wangxf341@nenu.edu.cn>, <https://scholar.google.com/citations?user=WBnzo_QAAAAJ&hl=en>
+
+Jianhua Guo, jhguo@nenu.edu.cn
+
+Huaian Diao, diao@jlu.edu.cn, <https://scholar.google.com/citations?user=p9M8-YgAAAAJ&hl=en>
+
